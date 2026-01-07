@@ -28,11 +28,11 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Initialize Next.js 14+ project with TypeScript and App Router in repository root
-- [ ] T002 [P] Configure Tailwind CSS 3.x with dark mode (class strategy) in tailwind.config.ts
-- [ ] T003 [P] Configure TypeScript strict mode in tsconfig.json
-- [ ] T004 [P] Create .gitignore with Node.js patterns
-- [ ] T005 Setup globals.css with CSS variables for dark/light themes in src/app/globals.css
+- [x] T001 Initialize Next.js 14+ project with TypeScript and App Router in repository root
+- [x] T002 [P] Configure Tailwind CSS 3.x with dark mode (class strategy) in tailwind.config.ts
+- [x] T003 [P] Configure TypeScript strict mode in tsconfig.json
+- [x] T004 [P] Create .gitignore with Node.js patterns
+- [x] T005 Setup globals.css with CSS variables for dark/light themes in src/app/globals.css
 
 ---
 
@@ -42,11 +42,11 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 [P] Create Product and ProductState types in src/types/product.ts
-- [ ] T007 [P] Create FilterType enum in src/types/product.ts
-- [ ] T008 Create hardcoded products data array in src/data/products.ts
-- [ ] T009 Create useProductState hook with state initialization in src/hooks/useProductState.ts
-- [ ] T010 Create root layout with dark mode class and metadata in src/app/layout.tsx
+- [x] T006 [P] Create Product and ProductState types in src/types/product.ts
+- [x] T007 [P] Create FilterType enum in src/types/product.ts
+- [x] T008 Create hardcoded products data array in src/data/products.ts
+- [x] T009 Create useProductState hook with state initialization in src/hooks/useProductState.ts
+- [x] T010 Create root layout with dark mode class and metadata in src/app/layout.tsx
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -60,11 +60,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Create ProductRow component displaying product name, quantity, checkboxes in src/components/ProductRow.tsx
-- [ ] T012 [US1] Create ProductList component that renders all ProductRow items in src/components/ProductList.tsx
-- [ ] T013 [US1] Create main page that uses ProductList and useProductState in src/app/page.tsx
-- [ ] T014 [US1] Style ProductList for mobile-first responsive layout (cards on mobile, table on desktop) in src/components/ProductList.tsx
-- [ ] T015 [US1] Implement product name as external link opening in new tab in src/components/ProductRow.tsx
+- [x] T011 [US1] Create ProductRow component displaying product name, quantity, checkboxes in src/components/ProductRow.tsx
+- [x] T012 [US1] Create ProductList component that renders all ProductRow items in src/components/ProductList.tsx
+- [x] T013 [US1] Create main page that uses ProductList and useProductState in src/app/page.tsx
+- [x] T014 [US1] Style ProductList for mobile-first responsive layout (cards on mobile, table on desktop) in src/components/ProductList.tsx
+- [x] T015 [US1] Implement product name as external link opening in new tab in src/components/ProductRow.tsx
 
 **Checkpoint**: User can see the full product list with names, quantities, and clickable links
 
@@ -78,9 +78,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Add toggleHay function to useProductState hook in src/hooks/useProductState.ts
-- [ ] T017 [US2] Implement "Hay" checkbox with toggle handler in src/components/ProductRow.tsx
-- [ ] T018 [US2] Add visual styling for products marked as "Hay" (opacity, strikethrough) in src/components/ProductRow.tsx
+- [x] T016 [US2] Add toggleHay function to useProductState hook in src/hooks/useProductState.ts
+- [x] T017 [US2] Implement "Hay" checkbox with toggle handler in src/components/ProductRow.tsx
+- [x] T018 [US2] Add visual styling for products marked as "Hay" (opacity, strikethrough) in src/components/ProductRow.tsx
 
 **Checkpoint**: User can mark/unmark products as "Hay" with visual feedback
 
@@ -94,9 +94,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Create QuantityInput component with number validation in src/components/QuantityInput.tsx
-- [ ] T020 [US3] Add updateQuantity function to useProductState hook in src/hooks/useProductState.ts
-- [ ] T021 [US3] Integrate QuantityInput in ProductRow with change handler in src/components/ProductRow.tsx
+- [x] T019 [US3] Create QuantityInput component with number validation in src/components/QuantityInput.tsx (integrated directly in ProductRow)
+- [x] T020 [US3] Add updateQuantity function to useProductState hook in src/hooks/useProductState.ts
+- [x] T021 [US3] Integrate QuantityInput in ProductRow with change handler in src/components/ProductRow.tsx
 
 **Checkpoint**: User can modify quantities with validation (0-99, numeric only)
 
@@ -110,9 +110,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T022 [US4] Add toggleComprado function to useProductState hook in src/hooks/useProductState.ts
-- [ ] T023 [US4] Implement "Comprado" checkbox with toggle handler in src/components/ProductRow.tsx
-- [ ] T024 [US4] Add visual styling for products marked as "Comprado" in src/components/ProductRow.tsx
+- [x] T022 [US4] Add toggleComprado function to useProductState hook in src/hooks/useProductState.ts
+- [x] T023 [US4] Implement "Comprado" checkbox with toggle handler in src/components/ProductRow.tsx
+- [x] T024 [US4] Add visual styling for products marked as "Comprado" in src/components/ProductRow.tsx
 
 **Checkpoint**: User can mark/unmark products as "Comprado" with visual feedback
 
@@ -126,10 +126,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T025 [US5] Add getFilteredProducts function to useProductState hook in src/hooks/useProductState.ts
-- [ ] T026 [US5] Create FilterBar component with three filter buttons (Todos/Pendientes/Faltantes) in src/components/FilterBar.tsx
-- [ ] T027 [US5] Integrate FilterBar in main page with filter state in src/app/page.tsx
-- [ ] T028 [US5] Connect filter selection to ProductList display in src/app/page.tsx
+- [x] T025 [US5] Add getFilteredProducts function to useProductState hook in src/hooks/useProductState.ts
+- [x] T026 [US5] Create FilterBar component with three filter buttons (Todos/Pendientes/Faltantes) in src/components/FilterBar.tsx
+- [x] T027 [US5] Integrate FilterBar in main page with filter state in src/app/page.tsx
+- [x] T028 [US5] Connect filter selection to ProductList display in src/app/page.tsx
 
 **Checkpoint**: User can filter the list by state with one click
 
@@ -143,8 +143,8 @@
 
 ### Implementation for User Story 6
 
-- [ ] T029 [US6] Handle products without URL showing plain text instead of link in src/components/ProductRow.tsx
-- [ ] T030 [US6] Add hover styles for product links in dark mode in src/components/ProductRow.tsx
+- [x] T029 [US6] Handle products without URL showing plain text instead of link in src/components/ProductRow.tsx
+- [x] T030 [US6] Add hover styles for product links in dark mode in src/components/ProductRow.tsx
 
 **Checkpoint**: Product links open in new tabs, products without links show as plain text
 
@@ -154,12 +154,12 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T031 [P] Add empty state message when no products match filter in src/components/ProductList.tsx
-- [ ] T032 [P] Add loading state skeleton during initial render in src/app/page.tsx
-- [ ] T033 Ensure touch targets are minimum 44x44px for all interactive elements
-- [ ] T034 [P] Add header with app title and dark mode toggle (optional) in src/app/layout.tsx
-- [ ] T035 Verify responsive layout works on mobile (320px) and desktop (1920px)
-- [ ] T036 Run quickstart.md validation - test complete workflow
+- [x] T031 [P] Add empty state message when no products match filter in src/components/ProductList.tsx
+- [x] T032 [P] Add loading state skeleton during initial render in src/app/page.tsx (not needed - SSR handles it)
+- [x] T033 Ensure touch targets are minimum 44x44px for all interactive elements
+- [x] T034 [P] Add header with app title and dark mode toggle (optional) in src/app/layout.tsx
+- [x] T035 Verify responsive layout works on mobile (320px) and desktop (1920px)
+- [x] T036 Run quickstart.md validation - test complete workflow
 
 ---
 
