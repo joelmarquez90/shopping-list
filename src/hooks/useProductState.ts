@@ -10,7 +10,7 @@ const initializeState = (products: Product[]): ProductState[] => {
   return products.map(product => ({
     ...product,
     quantity: product.defaultQuantity,
-    hay: false,
+    hay: product.defaultHay ?? false,
     comprado: false
   }))
 }

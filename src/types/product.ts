@@ -13,6 +13,9 @@ export interface Product {
 
   /** Default quantity to purchase each month */
   defaultQuantity: number
+
+  /** Default "hay" (have it) state from spreadsheet */
+  defaultHay?: boolean
 }
 
 /**

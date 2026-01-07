@@ -2,32 +2,33 @@ import { Product } from '@/types/product'
 
 /**
  * Product list for MVP Shopping List
- * Source: baselist.csv (extracted from Google Spreadsheet)
+ * Generated: 2026-01-07
+ * Source: Google Spreadsheet 'Artículos'
  */
 export const products: Product[] = [
   {
-    id: 'procenex-pisos',
+    id: 'procenex-poet-pisos',
     name: 'Procenex / Poet Pisos',
     url: 'https://www.masonline.com.ar/limpiador-desinfectante-de-pisos-poett-lavanda-4-l-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 4
   },
   {
     id: 'blem-aerosol',
     name: 'Blem aerosol',
     url: 'https://www.masonline.com.ar/lustramuebles-blem-brillo-y-proteccion-madera-lavanda-en-aerosol-360-cc-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 3
   },
   {
-    id: 'rollo-cocina',
+    id: 'rollo-de-cocina',
     name: 'Rollo de cocina',
     url: 'https://www.masonline.com.ar/rollo-de-cocina-sussex-clasico-doble-hoja-60-panos-3-u/p',
-    defaultQuantity: 0
+    defaultQuantity: 6
   },
   {
     id: 'papel-higienico',
     name: 'Papel higiénico',
     url: 'https://www.masonline.com.ar/papel-higienico-higienol-premium-doble-hoja-30m-4u-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 3
   },
   {
     id: 'panuelos-descartables',
@@ -45,19 +46,19 @@ export const products: Product[] = [
     id: 'limpiador-inodoro',
     name: 'Limpiador Inodoro',
     url: 'https://www.masonline.com.ar/pato-purific-gel-limpiador-durazno-galactico-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 1
   },
   {
-    id: 'discos-inodoro',
+    id: 'discos-inodoro-tropical',
     name: 'Discos inodoro Tropical',
     url: 'https://www.masonline.com.ar/discos-adhesivos-para-inodoro-pato-floral-aplicador-repuesto-38gr-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 2
   },
   {
     id: 'cif-bano',
     name: 'Cif baño',
     url: 'https://www.masonline.com.ar/limpiador-liquido-de-bano-cif-expert-450ml-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 3
   },
   {
     id: 'esponja-cocina',
@@ -72,7 +73,7 @@ export const products: Product[] = [
     defaultQuantity: 0
   },
   {
-    id: 'lavandina-gel',
+    id: 'lavandina-en-gel',
     name: 'Lavandina en gel',
     url: 'https://www.masonline.com.ar/lavandina-en-gel-ayudin-original-1-5-lt-2/p',
     defaultQuantity: 0
@@ -81,13 +82,13 @@ export const products: Product[] = [
     id: 'desengrasante',
     name: 'Desengrasante',
     url: 'https://www.masonline.com.ar/limpiador-antigrasa-cif-expert-450ml-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 2
   },
   {
     id: 'detergente',
     name: 'Detergente',
     url: 'https://www.masonline.com.ar/detergente-magistral-pureza-activa-500ml/p',
-    defaultQuantity: 0
+    defaultQuantity: 1
   },
   {
     id: 'pano',
@@ -105,7 +106,7 @@ export const products: Product[] = [
     id: 'bolsas-basura-bano',
     name: 'Bolsas basura baño',
     url: 'https://www.masonline.com.ar/bolsa-residuo-asurin-34x38-bano-fragancia-lavanda-30u/p',
-    defaultQuantity: 0
+    defaultQuantity: 1
   },
   {
     id: 'cif-crema',
@@ -117,16 +118,16 @@ export const products: Product[] = [
     id: 'bolsas-basura-45x55',
     name: 'Bolsas basura 45x55',
     url: 'https://www.masonline.com.ar/bolsas-para-residuos-asurin-normal-cierra-facil-aroma-limon-45x55cm-x20u-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 1
   },
   {
     id: 'bolsas-jardineras',
     name: 'Bolsas jardineras',
     url: 'https://www.masonline.com.ar/bolsas-para-residuos-asurin-jardinera-80x110cm-x10u-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 1
   },
   {
-    id: 'jabon-pan',
+    id: 'jabon-en-pan',
     name: 'Jabon en pan',
     url: 'https://www.masonline.com.ar/jabon-barra-ala-ecolavado-coco-200g/p',
     defaultQuantity: 0
@@ -135,7 +136,7 @@ export const products: Product[] = [
     id: 'suavizante',
     name: 'Suavizante',
     url: 'https://www.masonline.com.ar/suavizante-vivere-explosion-floral-clasico-doypack-3lt-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 2
   },
   {
     id: 'tide',
@@ -147,7 +148,7 @@ export const products: Product[] = [
     id: 'ariel-platinum',
     name: 'Ariel Platinum',
     url: 'https://www.masonline.com.ar/jabon-liquido-para-ropa-ariel-platinum-3-l-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 2
   },
   {
     id: 'ayudin-ropa-blanca',
@@ -171,7 +172,7 @@ export const products: Product[] = [
     id: 'protectores',
     name: 'Protectores',
     url: 'https://www.masonline.com.ar/protectores-diarios-carefree-todos-los-dias-compact-x80-un-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 1
   },
   {
     id: 'toallitas-femeninas',
@@ -183,17 +184,17 @@ export const products: Product[] = [
     id: 'jabon-dove-x3',
     name: 'Jabón Dove x3',
     url: 'https://www.masonline.com.ar/jabon-de-tocador-dove-original-multipack-3x90-grs-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 2
   },
   {
-    id: 'jabon-liquido-manos',
+    id: 'jabon-liquido-manos-espadol-rosa',
     name: 'Jabón líquido manos espadol rosa',
     url: 'https://www.masonline.com.ar/jabon-liquido-espadol-skn-dp-220ml-2/p',
     defaultQuantity: 0
   },
   {
-    id: 'dentifrico-blanqueador',
-    name: 'Dentífrico Grande Blanqueador',
+    id: 'dentifrico-grande-blanqueador',
+    name: 'Dentífrico Grande\nBlanqueador',
     url: 'https://www.masonline.com.ar/pasta-dental-colgate-total-prevencion-activa-original-mint-140-g/p',
     defaultQuantity: 0
   },
@@ -201,7 +202,7 @@ export const products: Product[] = [
     id: 'toallitas-humedas',
     name: 'Toallitas húmedas',
     url: 'https://www.masonline.com.ar/toallitas-humedas-pampers-aloe-vera-48-u-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 1
   },
   {
     id: 'cereales',
@@ -219,13 +220,13 @@ export const products: Product[] = [
     id: 'yerba-cosmico',
     name: 'Yerba Cósmico',
     url: 'https://www.masonline.com.ar/yerba-suave-cosmico-500-gr-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 2
   },
   {
     id: 'arroz-doble-carolina',
     name: 'Arroz doble carolina',
     url: 'https://www.masonline.com.ar/arroz-gallo-doble-carolina-seleccion-1kg-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 1
   },
   {
     id: 'papel-film-aluminio',
@@ -249,7 +250,7 @@ export const products: Product[] = [
     id: 'bolsas-chicas',
     name: 'Bolsas chicas',
     url: 'https://www.masonline.com.ar/bolsas-para-freezer-separata-20x30cm-x-20u-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 1
   },
   {
     id: 'bolsas-medianas',
@@ -271,7 +272,7 @@ export const products: Product[] = [
   },
   {
     id: 'fideos-spaghetti',
-    name: 'Fideos Spaghetti',
+    name: 'Fideos\nSpaghetti',
     url: 'https://www.masonline.com.ar/pasta-rina-fusilli-matarazzo-500gr/p',
     defaultQuantity: 0
   },
@@ -294,7 +295,7 @@ export const products: Product[] = [
     defaultQuantity: 0
   },
   {
-    id: 'aceite-oliva',
+    id: 'aceite-de-oliva',
     name: 'Aceite de oliva',
     url: 'https://www.masonline.com.ar/aceite-oliva-ev-intenso-cocinero-500-ml-2/p',
     defaultQuantity: 0
@@ -327,7 +328,7 @@ export const products: Product[] = [
     id: 'casancrem',
     name: 'Casancrem',
     url: 'https://www.masonline.com.ar/queso-crema-casancrem-balance-500-g/p',
-    defaultQuantity: 0
+    defaultQuantity: 1
   },
   {
     id: 'finlandia-balance',
@@ -339,17 +340,17 @@ export const products: Product[] = [
     id: 'ricotta',
     name: 'Ricotta',
     url: 'https://www.masonline.com.ar/ricota-semigrasa-baja-en-sodio-garcia-500gr-2/p',
-    defaultQuantity: 0
+    defaultQuantity: 2
   },
   {
     id: 'queso-por-salut',
     name: 'Queso por salut',
     url: 'https://www.masonline.com.ar/queso-port-salut-light-la-serenisima-unidad-500gr/p',
-    defaultQuantity: 0
+    defaultQuantity: 1
   },
   {
-    id: 'dulce-membrillo',
-    name: 'Dulce membrillo Arcor',
+    id: 'dulce-membrillo-arcor',
+    name: 'Dulce membrillo\nArcor',
     url: 'https://www.masonline.com.ar/membrillo-la-campagnola-estuche-12x500g-2/p',
     defaultQuantity: 0
   }

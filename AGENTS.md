@@ -49,11 +49,12 @@ interface Product {
   name: string
   url?: string           // Optional supermarket URL
   defaultQuantity: number
+  defaultHay?: boolean   // Default "have it" state from spreadsheet
 }
 
 interface ProductState extends Product {
   quantity: number
-  hay: boolean           // "Have it" - already at home
+  hay: boolean           // "Have it" - initialized from defaultHay
   comprado: boolean      // "Purchased" - added to cart
 }
 
@@ -110,7 +111,8 @@ Edit `src/data/products.ts`:
   id: 'unique-slug',
   name: 'Product Name',
   url: 'https://masonline.com.ar/...', // optional
-  defaultQuantity: 0
+  defaultQuantity: 0,
+  defaultHay: false  // optional, defaults to false
 }
 ```
 
