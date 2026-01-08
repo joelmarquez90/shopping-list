@@ -121,7 +121,7 @@ export const products: Product[] = [
   {
     id: 'bolsas-basura-bano',
     name: 'Bolsas basura baño',
-    url: 'https://www.masonline.com.ar/bolsa-residuo-asurin-34x38-bano-fragancia-lavanda-30u/p',
+    url: 'https://www.masonline.com.ar/bolsa-residuo-asurin-34x38-bano-fragancia-lavanda-30u-2/p',
     defaultQuantity: 1,
     defaultHay: false
   },
@@ -156,7 +156,7 @@ export const products: Product[] = [
   {
     id: 'suavizante',
     name: 'Suavizante',
-    url: 'https://www.masonline.com.ar/suavizante-vivere-explosion-floral-clasico-doypack-3lt-2/p',
+    url: 'https://www.masonline.com.ar/suavizante-para-rropa-comfort-clasico-capsulas-de-fragancia-3l-doypack-2/p',
     defaultQuantity: 2,
     defaultHay: false
   },
@@ -168,9 +168,9 @@ export const products: Product[] = [
     defaultHay: true
   },
   {
-    id: 'ariel-platinum',
-    name: 'Ariel Platinum',
-    url: 'https://www.masonline.com.ar/jabon-liquido-para-ropa-ariel-platinum-3-l-2/p',
+    id: 'ariel',
+    name: 'Ariel',
+    url: 'https://www.masonline.com.ar/jabon-liquido-para-ropa-ariel-limpieza-profunda-pouch-3000-cc-2/p',
     defaultQuantity: 2,
     defaultHay: false
   },
