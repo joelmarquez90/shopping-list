@@ -1,7 +1,7 @@
 'use client'
 
 import { useProductState } from '@/hooks/useProductState'
-import { products as initialProducts } from '@/data/products'
+import { useProducts } from '@/hooks/useProducts'
 import { ProductList } from '@/components/ProductList'
 import { FilterBar } from '@/components/FilterBar'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth'
 
 export default function Home() {
   const { user, signOut, loading: authLoading } = useAuth()
+  const { products: firestoreProducts, loading: productsLoading, error: productsError } = useProducts()
   const {
     products,
     filter,
@@ -18,7 +19,7 @@ export default function Home() {
     toggleComprado,
     updateQuantity,
     counts
-  } = useProductState(initialProducts)
+  } = useProductState(firestoreProducts)
 
   return (
     <ProtectedRoute>
@@ -58,6 +59,8 @@ export default function Home() {
             onToggleHay={toggleHay}
             onToggleComprado={toggleComprado}
             onUpdateQuantity={updateQuantity}
+            loading={productsLoading}
+            error={productsError}
           />
         </section>
 

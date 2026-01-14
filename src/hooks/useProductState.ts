@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { Product, ProductState, FilterType } from '@/types/product'
 
 /**
@@ -19,10 +19,26 @@ const initializeState = (products: Product[]): ProductState[] => {
  * Custom hook for managing product list state
  */
 export function useProductState(initialProducts: Product[]) {
+  // Initialize products state with lazy initializer
   const [products, setProducts] = useState<ProductState[]>(() =>
-    initializeState(initialProducts)
+    initialProducts.length > 0 ? initializeState(initialProducts) : []
   )
   const [filter, setFilter] = useState<FilterType>('ALL')
+
+  // Re-initialize products when source data changes (e.g., from Firestore)
+  // This is a valid use case: syncing React state with external data source
+  useEffect(() => {
+    let ignore = false
+
+    if (!ignore && initialProducts.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing with external data source is a valid pattern
+      setProducts(initializeState(initialProducts))
+    }
+
+    return () => {
+      ignore = true
+    }
+  }, [initialProducts])
 
   /**
    * Toggle the "hay" (have it) status of a product

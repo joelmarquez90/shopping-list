@@ -19,12 +19,12 @@
 
 **Purpose**: Project initialization and Firestore configuration
 
-- [ ] T001 Add Firestore to Firebase initialization in src/lib/firebase.ts
-- [ ] T002 [P] Create services directory at src/services/
-- [ ] T003 [P] Create scripts directory at src/scripts/
-- [ ] T004 [P] Create admin components directory at src/components/admin/
-- [ ] T005 Add CreateProductInput and UpdateProductInput types to src/types/product.ts
-- [ ] T006 Create ServiceResult type in src/types/service.ts
+- [x] T001 Add Firestore to Firebase initialization in src/lib/firebase.ts
+- [x] T002 [P] Create services directory at src/services/
+- [x] T003 [P] Create scripts directory at src/scripts/
+- [x] T004 [P] Create admin components directory at src/components/admin/
+- [x] T005 Add CreateProductInput and UpdateProductInput types to src/types/product.ts
+- [x] T006 Create ServiceResult type in src/types/service.ts
 
 **Checkpoint**: Infrastructure ready for service implementation
 
@@ -36,11 +36,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Implement getAllProducts() in src/services/productService.ts
-- [ ] T008 Implement getProduct(id) in src/services/productService.ts
-- [ ] T009 Implement productExists(id) in src/services/productService.ts
-- [ ] T010 Create useProducts hook in src/hooks/useProducts.ts
-- [ ] T011 Deploy Firestore security rules from specs/001-product-storage/contracts/firestore.rules
+- [x] T007 Implement getAllProducts() in src/services/productService.ts
+- [x] T008 Implement getProduct(id) in src/services/productService.ts
+- [x] T009 Implement productExists(id) in src/services/productService.ts
+- [x] T010 Create useProducts hook in src/hooks/useProducts.ts
+- [x] T011 Deploy Firestore security rules from specs/001-product-storage/contracts/firestore.rules
 
 **Checkpoint**: Foundation ready - user story implementation can begin
 
@@ -54,16 +54,16 @@
 
 ### Implementation for US1 (Initial Product Load)
 
-- [ ] T012 [US1] Implement seedProducts() batch write in src/services/productService.ts
-- [ ] T013 [US1] Create migration script in src/scripts/seedProducts.ts
-- [ ] T014 [US1] Add npm script for seed command in package.json
+- [x] T012 [US1] Implement seedProducts() batch write in src/services/productService.ts
+- [x] T013 [US1] Create migration script in src/scripts/seedProducts.ts
+- [x] T014 [US1] Add npm script for seed command in package.json
 
 ### Implementation for US3 (View All Products)
 
-- [ ] T015 [US3] Update src/app/page.tsx to use useProducts hook instead of static import
-- [ ] T016 [US3] Add loading state UI to ProductList in src/components/ProductList.tsx
-- [ ] T017 [US3] Add error state UI to ProductList in src/components/ProductList.tsx
-- [ ] T018 [US3] Remove static products import from src/app/page.tsx
+- [x] T015 [US3] Update src/app/page.tsx to use useProducts hook instead of static import
+- [x] T016 [US3] Add loading state UI to ProductList in src/components/ProductList.tsx
+- [x] T017 [US3] Add error state UI to ProductList in src/components/ProductList.tsx
+- [x] T018 [US3] Remove static products import from src/app/page.tsx
 
 **Checkpoint**: MVP complete - app fetches products from Firestore, seed script works
 
@@ -77,14 +77,14 @@
 
 ### Implementation for US2
 
-- [ ] T019 [US2] Implement updateProduct() in src/services/productService.ts
-- [ ] T020 [US2] Create useProductMutations hook in src/hooks/useProductMutations.ts
-- [ ] T021 [P] [US2] Create ProductForm component in src/components/admin/ProductForm.tsx
-- [ ] T022 [P] [US2] Create ProductTable component in src/components/admin/ProductTable.tsx
-- [ ] T023 [US2] Create admin products page at src/app/admin/products/page.tsx
-- [ ] T024 [US2] Create admin layout with auth guard at src/app/admin/layout.tsx
-- [ ] T025 [US2] Add edit functionality to ProductTable (edit button, inline or modal form)
-- [ ] T026 [US2] Add validation for empty name in ProductForm
+- [x] T019 [US2] Implement updateProduct() in src/services/productService.ts
+- [x] T020 [US2] Create useProductMutations hook in src/hooks/useProductMutations.ts
+- [x] T021 [P] [US2] Create ProductForm component in src/components/admin/ProductForm.tsx
+- [x] T022 [P] [US2] Create ProductTable component in src/components/admin/ProductTable.tsx
+- [x] T023 [US2] Create admin products page at src/app/admin/products/page.tsx
+- [x] T024 [US2] Create admin layout with auth guard at src/app/admin/layout.tsx
+- [x] T025 [US2] Add edit functionality to ProductTable (edit button, inline or modal form)
+- [x] T026 [US2] Add validation for empty name in ProductForm
 
 **Checkpoint**: Admins can edit product name and URL
 
@@ -98,11 +98,11 @@
 
 ### Implementation for US4
 
-- [ ] T027 [US4] Implement createProduct() in src/services/productService.ts
-- [ ] T028 [US4] Implement slug generation utility in src/lib/utils.ts
-- [ ] T029 [US4] Add create mutation to useProductMutations hook
-- [ ] T030 [US4] Add "Add Product" button and form to admin products page
-- [ ] T031 [US4] Add duplicate ID validation in createProduct service
+- [x] T027 [US4] Implement createProduct() in src/services/productService.ts
+- [x] T028 [US4] Implement slug generation utility in src/lib/utils.ts
+- [x] T029 [US4] Add create mutation to useProductMutations hook
+- [x] T030 [US4] Add "Add Product" button and form to admin products page
+- [x] T031 [US4] Add duplicate ID validation in createProduct service
 
 **Checkpoint**: Admins can add new products
 
@@ -116,10 +116,10 @@
 
 ### Implementation for US5
 
-- [ ] T032 [US5] Implement deleteProduct() in src/services/productService.ts
-- [ ] T033 [US5] Add delete mutation to useProductMutations hook
-- [ ] T034 [US5] Create ConfirmDialog component in src/components/admin/ConfirmDialog.tsx
-- [ ] T035 [US5] Add delete button with confirmation to ProductTable
+- [x] T032 [US5] Implement deleteProduct() in src/services/productService.ts
+- [x] T033 [US5] Add delete mutation to useProductMutations hook
+- [x] T034 [US5] Create ConfirmDialog component in src/components/admin/ConfirmDialog.tsx
+- [x] T035 [US5] Add delete button with confirmation to ProductTable
 
 **Checkpoint**: Admins can delete products with confirmation
 
@@ -129,13 +129,13 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T036 [P] Add link to admin section in main app navigation
-- [ ] T037 [P] Add mobile-responsive styles to admin components
-- [ ] T038 Ensure dark mode styling for all admin components
-- [ ] T039 Add optimistic updates to useProductMutations for better UX
-- [ ] T040 Deprecate src/data/products.ts with comment (keep for reference)
-- [ ] T041 Run quickstart.md validation steps
-- [ ] T042 Update CLAUDE.md if needed for new patterns
+- [x] T036 [P] Add link to admin section in main app navigation
+- [x] T037 [P] Add mobile-responsive styles to admin components
+- [x] T038 Ensure dark mode styling for all admin components
+- [ ] T039 Add optimistic updates to useProductMutations for better UX (optional enhancement)
+- [x] T040 Deprecate src/data/products.ts with comment (keep for reference)
+- [x] T041 Run quickstart.md validation steps
+- [x] T042 Update CLAUDE.md if needed for new patterns (no updates needed)
 
 ---
 

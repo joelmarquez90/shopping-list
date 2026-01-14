@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { AuthUser } from '@/types/auth'
 
 interface UserMenuProps {
@@ -7,6 +8,7 @@ interface UserMenuProps {
   onSignOut: () => void
   loading?: boolean
   className?: string
+  showAdminLink?: boolean
 }
 
 export function UserMenu({
@@ -14,9 +16,20 @@ export function UserMenu({
   onSignOut,
   loading = false,
   className = '',
+  showAdminLink = true,
 }: UserMenuProps) {
   return (
     <div className={`flex items-center gap-3 ${className}`}>
+      {/* Admin Link */}
+      {showAdminLink && (
+        <Link
+          href="/admin/products"
+          className="px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
+        >
+          Admin
+        </Link>
+      )}
+
       {/* User Avatar */}
       {user.photoURL ? (
         <img

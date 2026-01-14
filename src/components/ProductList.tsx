@@ -8,14 +8,39 @@ interface ProductListProps {
   onToggleHay: (id: string) => void
   onToggleComprado: (id: string) => void
   onUpdateQuantity: (id: string, quantity: number) => void
+  loading?: boolean
+  error?: string | null
 }
 
 export function ProductList({
   products,
   onToggleHay,
   onToggleComprado,
-  onUpdateQuantity
+  onUpdateQuantity,
+  loading = false,
+  error = null
 }: ProductListProps) {
+  // Loading state
+  if (loading) {
+    return (
+      <div className="text-center py-12 text-muted">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-current border-t-transparent mb-4" />
+        <p className="text-lg">Cargando productos...</p>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="text-center py-12 text-red-500">
+        <p className="text-lg">Error al cargar productos</p>
+        <p className="text-sm mt-2">{error}</p>
+      </div>
+    )
+  }
+
+  // Empty state
   if (products.length === 0) {
     return (
       <div className="text-center py-12 text-muted">
