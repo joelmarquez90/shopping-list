@@ -1,6 +1,10 @@
 import { Product } from '@/types/product'
 
 /**
+ * @deprecated This file is deprecated. Products are now stored in Firebase Firestore.
+ * Use `useProducts` hook or `productService` to fetch products from the database.
+ * This file is kept for reference and for the seed script migration.
+ *
  * Product list for MVP Shopping List
  * Generated: 2026-01-07
  * Source: Google Spreadsheet 'Artículos'

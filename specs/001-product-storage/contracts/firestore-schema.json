@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Product Storage Firestore Schema",
+  "description": "JSON Schema representation of Firestore collections for product storage feature",
+
+  "collections": {
+    "products": {
+      "description": "Collection of household products for shopping list",
+      "documentIdPattern": "^[a-z0-9-]+$",
+      "documentIdSource": "product.id field (slug)",
+
+      "schema": {
+        "type": "object",
+        "required": ["id", "name", "defaultQuantity"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique product identifier (matches document ID)",
+            "pattern": "^[a-z0-9-]+$",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the product",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "url": {
+            "type": ["string", "null"],
+            "description": "URL to product page on supermarket website",
+            "format": "uri"
+          },
+          "defaultQuantity": {
+            "type": "integer",
+            "description": "Default quantity to purchase monthly",
+            "minimum": 0,
+            "default": 0
+          },
+          "defaultHay": {
+            "type": "boolean",
+            "description": "Whether user typically already has this item",
+            "default": false
+          }
+        },
+        "additionalProperties": false
+      },
+
+      "examples": [
+        {
+          "id": "procenex-poet-pisos",
+          "name": "Procenex / Poet Pisos",
+          "url": "https://www.masonline.com.ar/limpiador-desinfectante-de-pisos-poett-lavanda-4-l-2/p",
+          "defaultQuantity": 4,
+          "defaultHay": false
+        },
+        {
+          "id": "papel-higienico",
+          "name": "Papel higiénico",
+          "url": "https://www.masonline.com.ar/papel-higienico-higienol-premium-doble-hoja-30m-4u-2/p",
+          "defaultQuantity": 3,
+          "defaultHay": false
+        },
+        {
+          "id": "panuelos-descartables",
+          "name": "Pañuelos descartables",
+          "url": null,
+          "defaultQuantity": 0,
+          "defaultHay": true
+        }
+      ]
+    }
+  },
+
+  "indexes": {
+    "description": "No custom composite indexes required - Firestore auto-indexes all fields",
+    "required": []
+  }
+}

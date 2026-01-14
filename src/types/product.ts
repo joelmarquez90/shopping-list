@@ -1,8 +1,8 @@
 /**
- * Base product data - immutable, hardcoded
+ * Base product data stored in Firestore
  */
 export interface Product {
-  /** Unique identifier for the product */
+  /** Unique identifier for the product (document ID) */
   id: string
 
   /** Display name of the product */
@@ -15,6 +15,28 @@ export interface Product {
   defaultQuantity: number
 
   /** Default "hay" (have it) state from spreadsheet */
+  defaultHay?: boolean
+}
+
+/**
+ * Input for creating a new product
+ * ID is auto-generated from name if not provided
+ */
+export interface CreateProductInput {
+  name: string
+  url?: string
+  defaultQuantity?: number
+  defaultHay?: boolean
+}
+
+/**
+ * Input for updating an existing product
+ * All fields optional - only provided fields are updated
+ */
+export interface UpdateProductInput {
+  name?: string
+  url?: string
+  defaultQuantity?: number
   defaultHay?: boolean
 }
 
