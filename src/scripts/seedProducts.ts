@@ -1,39 +1,58 @@
 /**
  * One-time migration script to seed products from local file to Firestore
  *
- * Usage: npx ts-node --project tsconfig.seed.json src/scripts/seedProducts.ts
+ * Uses Firebase Admin SDK to bypass security rules.
+ *
+ * Setup:
+ * 1. Go to Firebase Console > Project Settings > Service Accounts
+ * 2. Click "Generate new private key" and save as `serviceAccountKey.json` in project root
+ * 3. Run: npm run seed
  *
  * Or via npm script: npm run seed:products
  */
 
-import { initializeApp, getApps } from 'firebase/app'
-import { getFirestore, collection, writeBatch, doc } from 'firebase/firestore'
+import * as admin from 'firebase-admin'
+import * as path from 'path'
+import * as fs from 'fs'
 import { products } from '../data/products'
 
-// Firebase config - uses same env vars as the app
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-}
+// Path to service account key file
+const serviceAccountPath = path.join(process.cwd(), 'serviceAccountKey.json')
 
 async function seedProducts() {
   console.log('Starting product migration...')
+
+  // Check if service account key exists
+  if (!fs.existsSync(serviceAccountPath)) {
+    console.error('Error: serviceAccountKey.json not found!')
+    console.error('')
+    console.error('To generate a service account key:')
+    console.error('1. Go to Firebase Console > Project Settings > Service Accounts')
+    console.error('2. Click "Generate new private key"')
+    console.error('3. Save the file as "serviceAccountKey.json" in the project root')
+    console.error('')
+    console.error('Note: Add serviceAccountKey.json to .gitignore to keep it secure!')
+    process.exit(1)
+  }
+
+  // Initialize Firebase Admin
+  const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'))
+
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    })
+  }
+
+  const db = admin.firestore()
   console.log(`Found ${products.length} products to migrate`)
 
-  // Initialize Firebase
-  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-  const db = getFirestore(app)
-
-  // Use batch writes for efficiency
-  const batch = writeBatch(db)
+  // Use batch writes for efficiency (max 500 operations per batch)
+  const batch = db.batch()
   let count = 0
 
   for (const product of products) {
-    const docRef = doc(collection(db, 'products'), product.id)
+    const docRef = db.collection('products').doc(product.id)
     batch.set(docRef, {
       id: product.id,
       name: product.name,

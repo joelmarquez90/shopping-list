@@ -36,7 +36,7 @@ service cloud.firestore {
     // In production, consider using custom claims instead
     function getAdminEmails() {
       return [
-        'joel@example.com'  // TODO: Replace with actual admin email
+        'joelmarquez90@gmail.com'  // Admin email
       ];
     }
 
