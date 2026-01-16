@@ -85,6 +85,20 @@ export function useProductState(initialProducts: Product[]) {
   }, [])
 
   /**
+   * Reset all products: clear hay, comprado, and set quantities to 0
+   */
+  const resetAll = useCallback(() => {
+    setProducts(prev =>
+      prev.map(product => ({
+        ...product,
+        hay: false,
+        comprado: false,
+        quantity: 0
+      }))
+    )
+  }, [])
+
+  /**
    * Get filtered products based on current filter
    */
   const filteredProducts = useMemo(() => {
@@ -119,6 +133,7 @@ export function useProductState(initialProducts: Product[]) {
     toggleHay,
     toggleComprado,
     updateQuantity,
+    resetAll,
     counts
   }
 }

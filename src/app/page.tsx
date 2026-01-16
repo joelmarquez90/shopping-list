@@ -18,6 +18,7 @@ export default function Home() {
     toggleHay,
     toggleComprado,
     updateQuantity,
+    resetAll,
     counts
   } = useProductState(firestoreProducts)
 
@@ -46,11 +47,20 @@ export default function Home() {
         </header>
 
         {/* Filter Bar */}
-        <FilterBar
-          currentFilter={filter}
-          onFilterChange={setFilter}
-          counts={counts}
-        />
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <FilterBar
+            currentFilter={filter}
+            onFilterChange={setFilter}
+            counts={counts}
+          />
+          <button
+            onClick={resetAll}
+            className="px-4 py-2 text-sm font-medium rounded-lg border border-card-border bg-card-bg hover:bg-red-900/30 hover:border-red-700/50 text-muted hover:text-red-400 transition-colors"
+            title="Limpiar todos los checks y cantidades"
+          >
+            Limpiar
+          </button>
+        </div>
 
         {/* Product List */}
         <section className="mt-6">
