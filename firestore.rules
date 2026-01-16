@@ -21,6 +21,16 @@ service cloud.firestore {
     }
 
     // ============================================
+    // Shopping State Collection
+    // ============================================
+    // - Read/Write: Only the authenticated user who owns the document
+    // ============================================
+    match /shoppingState/{userId} {
+      // Users can only read and write their own shopping state
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ============================================
     // Helper Functions
     // ============================================
 

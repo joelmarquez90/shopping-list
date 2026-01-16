@@ -1,44 +1,117 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { Product, ProductState, FilterType } from '@/types/product'
+import { useShoppingState } from './useShoppingState'
+import type { ProductShoppingState } from '@/types/shoppingState'
 
 /**
- * Initialize product state from base product data
+ * Initialize product state from base product data and optional saved state
  */
-const initializeState = (products: Product[]): ProductState[] => {
-  return products.map(product => ({
-    ...product,
-    quantity: product.defaultQuantity,
-    hay: product.defaultHay ?? false,
-    comprado: false
-  }))
+const initializeState = (
+  products: Product[],
+  savedState: Record<string, ProductShoppingState>
+): ProductState[] => {
+  return products.map(product => {
+    const saved = savedState[product.id]
+    return {
+      ...product,
+      quantity: saved?.quantity ?? product.defaultQuantity,
+      hay: saved?.hay ?? product.defaultHay ?? false,
+      comprado: saved?.comprado ?? false
+    }
+  })
 }
 
 /**
- * Custom hook for managing product list state
+ * Convert product states to shopping state record for Firestore
  */
-export function useProductState(initialProducts: Product[]) {
-  // Initialize products state with lazy initializer
-  const [products, setProducts] = useState<ProductState[]>(() =>
-    initialProducts.length > 0 ? initializeState(initialProducts) : []
-  )
+const toShoppingState = (products: ProductState[]): Record<string, ProductShoppingState> => {
+  const state: Record<string, ProductShoppingState> = {}
+  for (const product of products) {
+    state[product.id] = {
+      hay: product.hay,
+      comprado: product.comprado,
+      quantity: product.quantity
+    }
+  }
+  return state
+}
+
+interface UseProductStateOptions {
+  /** User ID for syncing with Firestore (null = no sync) */
+  userId?: string | null
+}
+
+/**
+ * Custom hook for managing product list state with Firestore sync
+ */
+export function useProductState(
+  initialProducts: Product[],
+  options: UseProductStateOptions = {}
+) {
+  const { userId = null } = options
+  
+  // Shopping state from Firestore
+  const { 
+    shoppingState, 
+    loading: stateLoading, 
+    isLoaded: stateIsLoaded,
+    saveState 
+  } = useShoppingState(userId)
+
+  // Initialize products state
+  const [products, setProducts] = useState<ProductState[]>([])
   const [filter, setFilter] = useState<FilterType>('ALL')
+  const [isInitialized, setIsInitialized] = useState(false)
+  
+  // Track if we've merged Firestore state
+  const hasMergedRef = useRef(false)
 
-  // Re-initialize products when source data changes (e.g., from Firestore)
-  // This is a valid use case: syncing React state with external data source
+  // Initialize products when source data and Firestore state are ready
   useEffect(() => {
-    let ignore = false
-
-    if (!ignore && initialProducts.length > 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing with external data source is a valid pattern
-      setProducts(initializeState(initialProducts))
+    // Wait for products to be available
+    if (initialProducts.length === 0) {
+      return
     }
 
-    return () => {
-      ignore = true
+    // If no user, just initialize with defaults
+    if (!userId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing with external data source is valid
+      setProducts(initializeState(initialProducts, {}))
+      setIsInitialized(true)
+      return
     }
-  }, [initialProducts])
+
+    // Wait for Firestore state to load
+    if (!stateIsLoaded) {
+      return
+    }
+
+    // Only merge once per user/products combination
+    if (!hasMergedRef.current) {
+      hasMergedRef.current = true
+      setProducts(initializeState(initialProducts, shoppingState))
+      setIsInitialized(true)
+    }
+  }, [initialProducts, userId, stateIsLoaded, shoppingState])
+
+  // Reset merge flag when user changes
+  useEffect(() => {
+    hasMergedRef.current = false
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset state when user changes is valid
+    setIsInitialized(false)
+  }, [userId])
+
+  // Sync to Firestore when products change (after initialization)
+  useEffect(() => {
+    if (!userId || !isInitialized || products.length === 0) {
+      return
+    }
+
+    const state = toShoppingState(products)
+    saveState(state)
+  }, [products, userId, isInitialized, saveState])
 
   /**
    * Toggle the "hay" (have it) status of a product
@@ -134,6 +207,8 @@ export function useProductState(initialProducts: Product[]) {
     toggleComprado,
     updateQuantity,
     resetAll,
-    counts
+    counts,
+    loading: stateLoading || !isInitialized,
+    syncing: stateLoading
   }
 }

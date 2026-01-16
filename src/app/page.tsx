@@ -19,8 +19,9 @@ export default function Home() {
     toggleComprado,
     updateQuantity,
     resetAll,
-    counts
-  } = useProductState(firestoreProducts)
+    counts,
+    loading: stateLoading
+  } = useProductState(firestoreProducts, { userId: user?.uid ?? null })
 
   return (
     <ProtectedRoute>
@@ -69,7 +70,7 @@ export default function Home() {
             onToggleHay={toggleHay}
             onToggleComprado={toggleComprado}
             onUpdateQuantity={updateQuantity}
-            loading={productsLoading}
+            loading={productsLoading || stateLoading}
             error={productsError}
           />
         </section>
