@@ -6,6 +6,7 @@ import { ProductList } from '@/components/ProductList'
 import { FilterBar } from '@/components/FilterBar'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { UserMenu } from '@/components/auth/UserMenu'
+import { MasonlineButton } from '@/components/MasonlineButton'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
   const { products: firestoreProducts, loading: productsLoading, error: productsError } = useProducts()
   const {
     products,
+    allProducts,
     filter,
     setFilter,
     toggleHay,
@@ -54,13 +56,16 @@ export default function Home() {
             onFilterChange={setFilter}
             counts={counts}
           />
-          <button
-            onClick={resetAll}
-            className="px-4 py-2 text-sm font-medium rounded-lg border border-card-border bg-card-bg hover:bg-red-900/30 hover:border-red-700/50 text-muted hover:text-red-400 transition-colors"
-            title="Limpiar todos los checks y cantidades"
-          >
-            Limpiar
-          </button>
+          <div className="flex items-center gap-2">
+            <MasonlineButton products={allProducts} />
+            <button
+              onClick={resetAll}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-card-border bg-card-bg hover:bg-red-900/30 hover:border-red-700/50 text-muted hover:text-red-400 transition-colors"
+              title="Limpiar todos los checks y cantidades"
+            >
+              Limpiar
+            </button>
+          </div>
         </div>
 
         {/* Product List */}

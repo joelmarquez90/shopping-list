@@ -47,3 +47,6 @@ next-env.d.ts
 
 # Debug
 .debug/
+
+# MasonLine session data
+.masonline-session/
