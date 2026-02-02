@@ -13,9 +13,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate each product has required fields
     for (const product of products) {
-      if (!product.name || !product.url || !product.quantity || product.quantity < 1) {
+      if (!product.id || !product.name || !product.url || !product.quantity || product.quantity < 1) {
         return NextResponse.json(
           { error: `Producto invalido: ${product.name || 'sin nombre'}` },
           { status: 400 }

@@ -5,16 +5,22 @@ import { ProductState } from '@/types/product'
 
 interface MasonlineButtonProps {
   products: ProductState[]
+  onMarkComprado: (id: string) => void
 }
 
 type CartStatus = 'idle' | 'loading' | 'success' | 'error'
 
-interface Result {
-  success: string[]
-  failed: { name: string; error: string }[]
+interface ResultItem {
+  id: string
+  name: string
 }
 
-export function MasonlineButton({ products }: MasonlineButtonProps) {
+interface Result {
+  success: ResultItem[]
+  failed: { id: string; name: string; error: string }[]
+}
+
+export function MasonlineButton({ products, onMarkComprado }: MasonlineButtonProps) {
   const [loginLoading, setLoginLoading] = useState(false)
   const [cartStatus, setCartStatus] = useState<CartStatus>('idle')
   const [result, setResult] = useState<Result | null>(null)
@@ -46,6 +52,7 @@ export function MasonlineButton({ products }: MasonlineButtonProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           products: eligible.map(p => ({
+            id: p.id,
             name: p.name,
             url: p.url,
             quantity: p.quantity
@@ -53,21 +60,26 @@ export function MasonlineButton({ products }: MasonlineButtonProps) {
         })
       })
 
-      const data = await response.json()
+      const data: Result = await response.json()
 
       if (!response.ok) {
         setCartStatus('error')
-        setResult({ success: [], failed: [{ name: 'General', error: data.error }] })
+        setResult({ success: [], failed: [{ id: '', name: 'General', error: (data as unknown as { error: string }).error }] })
         return
       }
 
       setResult(data)
       setCartStatus(data.failed.length === 0 ? 'success' : 'error')
+
+      // Mark successful products as comprado
+      for (const item of data.success) {
+        onMarkComprado(item.id)
+      }
     } catch (error) {
       setCartStatus('error')
       setResult({
         success: [],
-        failed: [{ name: 'General', error: error instanceof Error ? error.message : 'Error de red' }]
+        failed: [{ id: '', name: 'General', error: error instanceof Error ? error.message : 'Error de red' }]
       })
     }
   }

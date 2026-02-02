@@ -57,7 +57,7 @@ export default function Home() {
             counts={counts}
           />
           <div className="flex items-center gap-2">
-            <MasonlineButton products={allProducts} />
+            <MasonlineButton products={allProducts} onMarkComprado={toggleComprado} />
             <button
               onClick={resetAll}
               className="px-4 py-2 text-sm font-medium rounded-lg border border-card-border bg-card-bg hover:bg-red-900/30 hover:border-red-700/50 text-muted hover:text-red-400 transition-colors"
