@@ -167,9 +167,10 @@ export async function updateProduct(
     }
 
     // Build update object with only defined fields
-    const updates: Partial<Product> = {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updates: Record<string, any> = {}
     if (input.name !== undefined) updates.name = input.name.trim()
-    if (input.url !== undefined) updates.url = input.url || undefined
+    if (input.url !== undefined) updates.url = input.url || ''
     if (input.defaultQuantity !== undefined) updates.defaultQuantity = input.defaultQuantity
     if (input.defaultHay !== undefined) updates.defaultHay = input.defaultHay
 

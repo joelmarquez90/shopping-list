@@ -76,7 +76,7 @@ function ProductFormInternal({
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 bg-card border border-card-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full px-3 py-2 bg-card-bg border border-card-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
           placeholder="Nombre del producto"
           disabled={loading}
           required
@@ -92,7 +92,7 @@ function ProductFormInternal({
           id="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="w-full px-3 py-2 bg-card border border-card-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full px-3 py-2 bg-card-bg border border-card-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
           placeholder="https://..."
           disabled={loading}
         />
@@ -108,7 +108,7 @@ function ProductFormInternal({
             id="defaultQuantity"
             value={defaultQuantity}
             onChange={(e) => setDefaultQuantity(Math.max(0, parseInt(e.target.value) || 0))}
-            className="w-full px-3 py-2 bg-card border border-card-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-3 py-2 bg-card-bg border border-card-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
             min="0"
             disabled={loading}
           />
@@ -133,7 +133,7 @@ function ProductFormInternal({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm border border-card-border rounded hover:bg-card transition-colors"
+          className="px-4 py-2 text-sm border border-card-border rounded hover:bg-card-bg/50 transition-colors"
           disabled={loading}
         >
           Cancelar

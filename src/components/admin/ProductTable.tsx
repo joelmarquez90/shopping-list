@@ -43,7 +43,7 @@ export function ProductTable({
           {products.map((product) => (
             <tr
               key={product.id}
-              className="border-b border-card-border hover:bg-card/50 transition-colors"
+              className="border-b border-card-border hover:bg-card-bg/50 transition-colors"
             >
               <td className="px-4 py-3">
                 <span className="font-medium">{product.name}</span>

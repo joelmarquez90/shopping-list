@@ -10,7 +10,7 @@ import type { Product, CreateProductInput, UpdateProductInput } from '@/types/pr
 
 export default function AdminProductsPage() {
   const { products, loading: productsLoading, error: productsError, refetch } = useProducts()
-  const { create, update, remove, loading: mutationLoading } = useProductMutations()
+  const { create, update, remove, loading: mutationLoading, error: mutationError } = useProductMutations()
 
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [isCreating, setIsCreating] = useState(false)
@@ -53,35 +53,44 @@ export default function AdminProductsPage() {
             {products.length} productos en el catálogo
           </p>
         </div>
-        {!isFormOpen && (
-          <button
-            onClick={() => setIsCreating(true)}
-            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
-          >
-            Agregar Producto
-          </button>
-        )}
+        <button
+          onClick={() => setIsCreating(true)}
+          className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
+        >
+          Agregar Producto
+        </button>
       </div>
 
       {/* Error state */}
-      {productsError && (
+      {(productsError || mutationError) && (
         <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded mb-6">
-          {productsError}
+          {productsError || mutationError}
         </div>
       )}
 
-      {/* Form (create or edit) */}
+      {/* Form modal (create or edit) */}
       {isFormOpen && (
-        <div className="bg-card border border-card-border rounded-lg p-6 mb-6">
-          <ProductForm
-            product={editingProduct}
-            onSubmit={editingProduct ? handleUpdate : handleCreate}
-            onCancel={() => {
-              setIsCreating(false)
-              setEditingProduct(null)
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => {
+              if (!mutationLoading) {
+                setIsCreating(false)
+                setEditingProduct(null)
+              }
             }}
-            loading={mutationLoading}
           />
+          <div className="relative bg-card-bg border border-card-border rounded-lg p-6 max-w-lg w-full mx-4 shadow-xl">
+            <ProductForm
+              product={editingProduct}
+              onSubmit={editingProduct ? handleUpdate : handleCreate}
+              onCancel={() => {
+                setIsCreating(false)
+                setEditingProduct(null)
+              }}
+              loading={mutationLoading}
+            />
+          </div>
         </div>
       )}
 
@@ -92,7 +101,7 @@ export default function AdminProductsPage() {
           <p className="text-muted">Cargando productos...</p>
         </div>
       ) : (
-        <div className="bg-card border border-card-border rounded-lg">
+        <div className="bg-card-bg border border-card-border rounded-lg">
           <ProductTable
             products={products}
             onEdit={setEditingProduct}

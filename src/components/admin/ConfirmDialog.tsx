@@ -33,14 +33,14 @@ export function ConfirmDialog({
       />
 
       {/* Dialog */}
-      <div className="relative bg-card border border-card-border rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+      <div className="relative bg-card-bg border border-card-border rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
         <h2 className="text-lg font-semibold mb-2">{title}</h2>
         <p className="text-muted mb-6">{message}</p>
 
         <div className="flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-sm border border-card-border rounded hover:bg-card/50 transition-colors"
+            className="px-4 py-2 text-sm border border-card-border rounded hover:bg-card-bg/50 transition-colors"
             disabled={loading}
           >
             {cancelLabel}

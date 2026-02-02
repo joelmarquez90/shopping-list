@@ -37,7 +37,7 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen">
       {/* Admin Header */}
-      <header className="border-b border-card-border bg-card">
+      <header className="border-b border-card-border bg-card-bg">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <h1 className="text-lg font-semibold">Admin</h1>

@@ -59,7 +59,7 @@ export function UserMenu({
           px-3 py-1.5
           text-sm
           text-muted hover:text-foreground
-          bg-card hover:bg-card-hover
+          bg-card-bg hover:bg-card-border
           border border-card-border
           rounded-md
           transition-colors
