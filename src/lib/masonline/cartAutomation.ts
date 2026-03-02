@@ -1,5 +1,5 @@
 import { chromium, Page } from 'playwright'
-import { execFile } from 'child_process'
+import { execFile, execSync } from 'child_process'
 import path from 'path'
 
 export interface CartProduct {
@@ -32,7 +32,18 @@ function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+function killExistingChrome(): void {
+  try {
+    execSync('pkill -f "Google Chrome"', { stdio: 'ignore' })
+    // Wait a moment for Chrome to close
+    execSync('sleep 1', { stdio: 'ignore' })
+  } catch {
+    // No Chrome running, that's fine
+  }
+}
+
 function launchChromeProcess(url: string): void {
+  killExistingChrome()
   execFile(CHROME_PATH, [
     `--remote-debugging-port=${CDP_PORT}`,
     `--user-data-dir=${USER_DATA_DIR}`,
