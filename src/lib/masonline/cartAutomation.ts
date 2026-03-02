@@ -34,9 +34,9 @@ function delay(ms: number): Promise<void> {
 
 function killExistingChrome(): void {
   try {
-    execSync('pkill -f "Google Chrome"', { stdio: 'ignore' })
-    // Wait a moment for Chrome to close
-    execSync('sleep 1', { stdio: 'ignore' })
+    // Graceful quit via AppleScript avoids Chrome's auto-restart mechanism
+    execSync('osascript -e \'quit app "Google Chrome"\'', { stdio: 'ignore' })
+    execSync('sleep 2', { stdio: 'ignore' })
   } catch {
     // No Chrome running, that's fine
   }
