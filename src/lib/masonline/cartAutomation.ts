@@ -55,8 +55,23 @@ function launchChromeProcess(url: string): void {
   })
 }
 
+async function waitForCDP(maxWaitMs = 20000): Promise<void> {
+  const start = Date.now()
+  while (Date.now() - start < maxWaitMs) {
+    try {
+      const res = await fetch(`${CDP_URL}/json/version`, { signal: AbortSignal.timeout(1000) })
+      if (res.ok) return
+    } catch {
+      // not ready yet
+    }
+    await delay(500)
+  }
+  throw new Error('Chrome no arrancó a tiempo. Intentá de nuevo.')
+}
+
 export async function openLoginPage(): Promise<void> {
   launchChromeProcess('https://www.masonline.com.ar/')
+  await waitForCDP()
 }
 
 async function connectToChrome() {
