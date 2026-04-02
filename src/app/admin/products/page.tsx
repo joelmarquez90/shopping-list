@@ -15,6 +15,7 @@ export default function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null)
+  const [search, setSearch] = useState('')
 
   const handleCreate = async (data: CreateProductInput | UpdateProductInput) => {
     const result = await create(data as CreateProductInput)
@@ -44,13 +45,17 @@ export default function AdminProductsPage() {
 
   const isFormOpen = isCreating || !!editingProduct
 
+  const filteredProducts = search.trim()
+    ? products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+    : products
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Productos</h1>
           <p className="text-muted text-sm mt-1">
-            {products.length} productos en el catálogo
+            {filteredProducts.length} productos en el catálogo
           </p>
         </div>
         <button
@@ -59,6 +64,17 @@ export default function AdminProductsPage() {
         >
           Agregar Producto
         </button>
+      </div>
+
+      {/* Search */}
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Buscar producto..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full max-w-sm px-4 py-2 rounded border border-card-border bg-card-bg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        />
       </div>
 
       {/* Error state */}
@@ -103,7 +119,7 @@ export default function AdminProductsPage() {
       ) : (
         <div className="bg-card-bg border border-card-border rounded-lg">
           <ProductTable
-            products={products}
+            products={filteredProducts}
             onEdit={setEditingProduct}
             onDelete={setDeletingProduct}
             loading={mutationLoading}
