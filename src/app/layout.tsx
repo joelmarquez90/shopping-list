@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Lista de Compras',
   description: 'Aplicación para gestionar tu lista de compras mensual',
+  icons: { icon: { url: '/icon.svg', type: 'image/svg+xml' } },
 }
 
 export default function RootLayout({
