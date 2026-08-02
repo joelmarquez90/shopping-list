@@ -7,6 +7,7 @@ import { FilterBar } from '@/components/FilterBar'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { UserMenu } from '@/components/auth/UserMenu'
 import { MasonlineButton } from '@/components/MasonlineButton'
+import { MeliButton } from '@/components/MeliButton'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function Home() {
@@ -58,6 +59,7 @@ export default function Home() {
           />
           <div className="flex items-center gap-2">
             <MasonlineButton products={allProducts} onMarkComprado={toggleComprado} />
+            <MeliButton products={allProducts} onMarkComprado={toggleComprado} />
             <button
               onClick={resetAll}
               className="px-4 py-2 text-sm font-medium rounded-lg border border-card-border bg-card-bg hover:bg-red-900/30 hover:border-red-700/50 text-muted hover:text-red-400 transition-colors"
