@@ -95,7 +95,7 @@ export function MasonlineButton({ products, onMarkComprado }: MasonlineButtonPro
           ? `${result.success.length} ok, ${result.failed.length} fallidos`
           : 'Error'
       default:
-        return `Carrito (${eligible.length})`
+        return `Comprar (${eligible.length})`
     }
   }
 

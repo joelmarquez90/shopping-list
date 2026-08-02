@@ -1,6 +1,5 @@
-import { chromium, Page } from 'playwright'
-import { execFile } from 'child_process'
-import path from 'path'
+import { Page } from 'playwright'
+import { connectToChrome, delay, describeConnectionError, openBrowserAt } from '@/lib/browser/chromeSession'
 
 export interface CartProduct {
   id: string
@@ -19,57 +18,12 @@ export interface CartResult {
   failed: { id: string; name: string; error: string }[]
 }
 
-const USER_DATA_DIR = path.join(process.cwd(), '.masonline-session')
-const CDP_PORT = 9222
-const CDP_URL = `http://localhost:${CDP_PORT}`
 const NAVIGATION_TIMEOUT = 30000
 const DELAY_BETWEEN_PRODUCTS = 3000
 const EXTRA_QUANTITY_RETRIES = 5
 
-const CHROME_PATH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-
-function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-function launchChromeProcess(url: string): void {
-  execFile(CHROME_PATH, [
-    `--remote-debugging-port=${CDP_PORT}`,
-    `--user-data-dir=${USER_DATA_DIR}`,
-    url
-  ], (error) => {
-    if (error) {
-      console.error('Error launching Chrome:', error.message)
-    }
-  })
-}
-
-async function waitForCDP(maxWaitMs = 20000): Promise<void> {
-  const start = Date.now()
-  while (Date.now() - start < maxWaitMs) {
-    try {
-      const res = await fetch(`${CDP_URL}/json/version`, { signal: AbortSignal.timeout(1000) })
-      if (res.ok) return
-    } catch {
-      // not ready yet
-    }
-    await delay(500)
-  }
-  throw new Error('Chrome no arrancó a tiempo. Intentá de nuevo.')
-}
-
 export async function openLoginPage(): Promise<void> {
-  launchChromeProcess('https://www.masonline.com.ar/')
-  await waitForCDP()
-}
-
-async function connectToChrome() {
-  const browser = await chromium.connectOverCDP(CDP_URL)
-  const context = browser.contexts()[0]
-  if (!context) {
-    throw new Error('No se encontro un contexto de Chrome. Asegurate de abrir Chrome primero con el boton "Sesion".')
-  }
-  return { browser, context }
+  await openBrowserAt('https://www.masonline.com.ar/')
 }
 
 async function clickAddToCart(page: Page): Promise<void> {
@@ -228,11 +182,7 @@ export async function addProductsToCart(products: CartProduct[]): Promise<CartRe
 
     console.log(`\nResumen: ${result.success.length} exitosos, ${result.failed.length} fallidos`)
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error)
-    if (msg.includes('ECONNREFUSED') || msg.includes('connect')) {
-      throw new Error('Chrome no esta corriendo. Usa el boton "Sesion" primero para abrir Chrome.')
-    }
-    throw error
+    throw describeConnectionError(error)
   }
 
   return result
