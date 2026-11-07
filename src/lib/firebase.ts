@@ -17,13 +17,11 @@ let app: FirebaseApp | null = null
 let auth: Auth | null = null
 let db: Firestore | null = null
 
-if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig)
-} else {
-  app = getApps()[0]
+if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
+  app = getApps()[0] ?? initializeApp(firebaseConfig)
+  auth = getAuth(app)
+  db = getFirestore(app)
 }
-auth = getAuth(app)
-db = getFirestore(app)
 
 export { auth, db }
 export default app

@@ -1,6 +1,7 @@
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import type { ShoppingStateDocument, ProductShoppingState } from '@/types/shoppingState'
+import type { ProductShoppingState } from '@/types/shoppingState'
+import { isShoppingItems } from '@/lib/shoppingStateValidation'
 import { ServiceResult, successResult, errorResult } from '@/types/service'
 
 const SHOPPING_STATE_COLLECTION = 'shoppingState'
@@ -30,8 +31,9 @@ export async function getShoppingState(
       return successResult({})
     }
 
-    const data = docSnap.data() as ShoppingStateDocument
-    return successResult(data.items || {})
+    const data = docSnap.data()
+    if (!isShoppingItems(data.items)) return errorResult('El estado guardado tiene un formato inválido.')
+    return successResult(data.items)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch shopping state'
     return errorResult(message)
@@ -46,6 +48,7 @@ export async function saveShoppingState(
   items: Record<string, ProductShoppingState>
 ): Promise<ServiceResult<void>> {
   try {
+    if (!isShoppingItems(items)) return errorResult('El estado de compras no es válido.')
     const docRef = getShoppingStateDoc(userId)
     
     await setDoc(docRef, {

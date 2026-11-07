@@ -11,7 +11,8 @@
  * Or via npm script: npm run seed:products
  */
 
-import * as admin from 'firebase-admin'
+import { cert, getApps, initializeApp } from 'firebase-admin/app'
+import { getFirestore } from 'firebase-admin/firestore'
 import * as path from 'path'
 import * as fs from 'fs'
 import { products } from '../data/products'
@@ -38,13 +39,13 @@ async function seedProducts() {
   // Initialize Firebase Admin
   const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'))
 
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
+  if (!getApps().length) {
+    initializeApp({
+      credential: cert(serviceAccount)
     })
   }
 
-  const db = admin.firestore()
+  const db = getFirestore()
   console.log(`Found ${products.length} products to migrate`)
 
   // Use batch writes for efficiency (max 500 operations per batch)

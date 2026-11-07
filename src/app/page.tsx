@@ -23,7 +23,8 @@ export default function Home() {
     updateQuantity,
     resetAll,
     counts,
-    loading: stateLoading
+    loading: stateLoading,
+    error: stateError
   } = useProductState(firestoreProducts, { userId: user?.uid ?? null })
 
   return (
@@ -77,8 +78,8 @@ export default function Home() {
             onToggleHay={toggleHay}
             onToggleComprado={toggleComprado}
             onUpdateQuantity={updateQuantity}
-            loading={productsLoading || stateLoading}
-            error={productsError}
+            loading={!productsError && !stateError && (productsLoading || stateLoading)}
+            error={productsError || stateError}
           />
         </section>
 

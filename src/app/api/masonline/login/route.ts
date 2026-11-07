@@ -1,15 +1,11 @@
-import { NextResponse } from 'next/server'
 import { openLoginPage } from '@/lib/masonline/cartAutomation'
+import { automationResponse } from '@/lib/server/automation'
 
-export async function POST() {
-  try {
+export const runtime = 'nodejs'
+
+export async function POST(request: Request) {
+  return automationResponse(request, async () => {
     await openLoginPage()
-    return NextResponse.json({ ok: true })
-  } catch (error) {
-    console.error('Error abriendo login:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Error desconocido' },
-      { status: 500 }
-    )
-  }
+    return { ok: true }
+  })
 }

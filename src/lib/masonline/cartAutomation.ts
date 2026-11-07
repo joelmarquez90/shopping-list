@@ -1,5 +1,5 @@
 import { Page } from 'playwright'
-import { connectToChrome, delay, describeConnectionError, openBrowserAt } from '@/lib/browser/chromeSession'
+import { withStorePage, gotoProduct, delay, describeConnectionError, openBrowserAt } from '@/lib/browser/chromeSession'
 
 export interface CartProduct {
   id: string
@@ -137,53 +137,52 @@ export async function addProductsToCart(products: CartProduct[]): Promise<CartRe
   }
 
   try {
-    const { context } = await connectToChrome()
+    return await withStorePage('masonline', async page => {
+      page.setDefaultNavigationTimeout(NAVIGATION_TIMEOUT)
 
-    const page = context.pages()[0] || await context.newPage()
-    page.setDefaultNavigationTimeout(NAVIGATION_TIMEOUT)
+      for (const product of products) {
+        if (page.isClosed()) throw new Error('Se alcanzó el límite de tiempo de la operación.')
+        try {
+          console.log(`Procesando: ${product.name} (x${product.quantity})`)
 
-    for (const product of products) {
-      try {
-        console.log(`Procesando: ${product.name} (x${product.quantity})`)
+          await gotoProduct(page, product.url, 'masonline')
+          await delay(2000)
 
-        await page.goto(product.url, { waitUntil: 'networkidle' })
-        await delay(2000)
+          await clickAddToCart(page)
+          console.log(`  -> Agregado al carrito: ${product.name}`)
 
-        await clickAddToCart(page)
-        console.log(`  -> Agregado al carrito: ${product.name}`)
+          const finalQuantity = await adjustQuantity(page, product.quantity)
 
-        const finalQuantity = await adjustQuantity(page, product.quantity)
-
-        if (product.quantity > 1) {
-          if (finalQuantity >= product.quantity) {
-            console.log(`  -> Cantidad verificada: ${finalQuantity}`)
-          } else if (finalQuantity > 0) {
-            console.log(`  -> Cantidad parcial: ${finalQuantity} de ${product.quantity}`)
+          if (product.quantity > 1) {
+            if (finalQuantity >= product.quantity) {
+              console.log(`  -> Cantidad verificada: ${finalQuantity}`)
+            } else if (finalQuantity > 0) {
+              console.log(`  -> Cantidad parcial: ${finalQuantity} de ${product.quantity}`)
+            }
           }
+
+          if (finalQuantity >= product.quantity) {
+            result.success.push({ id: product.id, name: product.name })
+          } else {
+            result.failed.push({
+              id: product.id,
+              name: product.name,
+              error: `Cantidad esperada: ${product.quantity}, cantidad final: ${finalQuantity}`
+            })
+          }
+        } catch {
+          const errorMessage = 'No se pudo agregar el producto. Revisá la sesión y el enlace.'
+          console.error(`  -> Error con ${product.name}: ${errorMessage}`)
+          result.failed.push({ id: product.id, name: product.name, error: errorMessage })
         }
 
-        if (finalQuantity >= product.quantity) {
-          result.success.push({ id: product.id, name: product.name })
-        } else {
-          result.failed.push({
-            id: product.id,
-            name: product.name,
-            error: `Cantidad esperada: ${product.quantity}, cantidad final: ${finalQuantity}`
-          })
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error)
-        console.error(`  -> Error con ${product.name}: ${errorMessage}`)
-        result.failed.push({ id: product.id, name: product.name, error: errorMessage })
+        await delay(DELAY_BETWEEN_PRODUCTS)
       }
 
-      await delay(DELAY_BETWEEN_PRODUCTS)
-    }
-
-    console.log(`\nResumen: ${result.success.length} exitosos, ${result.failed.length} fallidos`)
-  } catch (error) {
-    throw describeConnectionError(error)
+      console.log(`\nResumen: ${result.success.length} exitosos, ${result.failed.length} fallidos`)
+      return result
+    })
+  } catch {
+    throw describeConnectionError()
   }
-
-  return result
 }

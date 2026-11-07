@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { productInputError } from '@/lib/productValidation'
 import type { Product, CreateProductInput, UpdateProductInput } from '@/types/product'
 
 interface ProductFormProps {
@@ -43,10 +44,16 @@ function ProductFormInternal({
       return
     }
 
+    const validationError = productInputError({ name, url: url.trim(), defaultQuantity, defaultHay })
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+
     try {
       await onSubmit({
         name: name.trim(),
-        url: url.trim() || undefined,
+        url: url.trim(),
         defaultQuantity,
         defaultHay
       })

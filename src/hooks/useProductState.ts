@@ -56,6 +56,7 @@ export function useProductState(
   const { 
     shoppingState, 
     loading: stateLoading, 
+    error: stateError,
     isLoaded: stateIsLoaded,
     saveState 
   } = useShoppingState(userId)
@@ -66,7 +67,8 @@ export function useProductState(
   const [isInitialized, setIsInitialized] = useState(false)
   
   // Track if we've merged Firestore state
-  const hasMergedRef = useRef(false)
+  const mergedUserRef = useRef<string | null | undefined>(undefined)
+  const [initializedUserId, setInitializedUserId] = useState<string | null | undefined>(undefined)
 
   // Initialize products when source data and Firestore state are ready
   useEffect(() => {
@@ -80,6 +82,8 @@ export function useProductState(
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing with external data source is valid
       setProducts(initializeState(initialProducts, {}))
       setIsInitialized(true)
+      setInitializedUserId(null)
+      mergedUserRef.current = null
       return
     }
 
@@ -89,29 +93,23 @@ export function useProductState(
     }
 
     // Only merge once per user/products combination
-    if (!hasMergedRef.current) {
-      hasMergedRef.current = true
+    if (mergedUserRef.current !== userId) {
+      mergedUserRef.current = userId
       setProducts(initializeState(initialProducts, shoppingState))
       setIsInitialized(true)
+      setInitializedUserId(userId)
     }
   }, [initialProducts, userId, stateIsLoaded, shoppingState])
 
-  // Reset merge flag when user changes
-  useEffect(() => {
-    hasMergedRef.current = false
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset state when user changes is valid
-    setIsInitialized(false)
-  }, [userId])
-
   // Sync to Firestore when products change (after initialization)
   useEffect(() => {
-    if (!userId || !isInitialized || products.length === 0) {
+    if (!userId || initializedUserId !== userId || !isInitialized || !stateIsLoaded || products.length === 0) {
       return
     }
 
     const state = toShoppingState(products)
     saveState(state)
-  }, [products, userId, isInitialized, saveState])
+  }, [products, userId, initializedUserId, isInitialized, stateIsLoaded, saveState])
 
   /**
    * Toggle the "hay" (have it) status of a product
@@ -146,7 +144,7 @@ export function useProductState(
    */
   const updateQuantity = useCallback((id: string, quantity: number) => {
     // Validate quantity is within bounds
-    const validQuantity = Math.max(0, Math.min(99, Math.floor(quantity)))
+    const validQuantity = Number.isFinite(quantity) ? Math.max(0, Math.min(99, Math.floor(quantity))) : 0
 
     setProducts(prev =>
       prev.map(product =>
@@ -208,7 +206,8 @@ export function useProductState(
     updateQuantity,
     resetAll,
     counts,
-    loading: stateLoading || !isInitialized,
-    syncing: stateLoading
+    loading: stateLoading || !isInitialized || initializedUserId !== userId,
+    syncing: stateLoading,
+    error: stateError
   }
 }

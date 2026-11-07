@@ -14,10 +14,8 @@ service cloud.firestore {
       allow read: if true;
 
       // Only authenticated admins can create, update, or delete
-      allow create, update, delete: if isAdmin();
-
-      // Validate product data on write
-      allow write: if isAdmin() && isValidProduct();
+      allow create, update: if isAdmin() && isValidProduct(productId);
+      allow delete: if isAdmin();
     }
 
     // ============================================
@@ -27,7 +25,15 @@ service cloud.firestore {
     // ============================================
     match /shoppingState/{userId} {
       // Users can only read and write their own shopping state
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasAll(['userId', 'updatedAt', 'items'])
+        && request.resource.data.keys().hasOnly(['userId', 'updatedAt', 'items'])
+        && request.resource.data.userId == userId
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.items is map
+        && request.resource.data.items.size() <= 500;
     }
 
     // ============================================
@@ -51,10 +57,12 @@ service cloud.firestore {
     }
 
     // Validate product document structure
-    function isValidProduct() {
+    function isValidProduct(productId) {
       let data = request.resource.data;
       return data.keys().hasAll(['id', 'name', 'defaultQuantity'])
+             && data.keys().hasOnly(['id', 'name', 'defaultQuantity', 'url', 'defaultHay'])
              && data.id is string
+             && data.id == productId
              && data.id.size() >= 1
              && data.id.size() <= 100
              && data.name is string
@@ -62,10 +70,14 @@ service cloud.firestore {
              && data.name.size() <= 100
              && data.defaultQuantity is int
              && data.defaultQuantity >= 0
+             && data.defaultQuantity <= 99
              && (
                !('url' in data.keys())
                || data.url == null
-               || data.url is string
+               || (data.url is string && (data.url == '' || (
+                 data.url.size() <= 2048
+                 && data.url.matches('https://(www[.])?masonline[.]com[.]ar/[^?#]+/p([?].*)?(#.*)?')
+               )))
              )
              && (
                !('defaultHay' in data.keys())

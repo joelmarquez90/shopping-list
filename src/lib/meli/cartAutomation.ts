@@ -1,5 +1,5 @@
 import { Page } from 'playwright'
-import { connectToChrome, delay, describeConnectionError } from '@/lib/browser/chromeSession'
+import { withStorePage, gotoProduct, delay, describeConnectionError } from '@/lib/browser/chromeSession'
 import { isLoggedIn } from '@/lib/meli/search'
 import { MeliCartResult, MeliSelection } from '@/types/meli'
 
@@ -112,12 +112,6 @@ async function clickAddToCart(page: Page): Promise<void> {
     return
   }
 
-  const byClass = page.locator('.ui-pdp-action--secondary, .ui-pdp-action--primary').first()
-  if (await byClass.count() > 0) {
-    await byClass.click()
-    return
-  }
-
   throw new Error('No se encontro el boton "Agregar al carrito" en la publicacion')
 }
 
@@ -158,76 +152,76 @@ export async function addSelectionsToCart(selections: MeliSelection[]): Promise<
   if (selections.length === 0) return result
 
   try {
-    const { context } = await connectToChrome()
-    const page = context.pages()[0] || await context.newPage()
-    page.setDefaultNavigationTimeout(NAVIGATION_TIMEOUT)
+    return await withStorePage('meli', async page => {
+      page.setDefaultNavigationTimeout(NAVIGATION_TIMEOUT)
 
-    /** Selections that got through the click without throwing, pending cart confirmation */
-    const attempted: MeliSelection[] = []
+      /** Selections that got through the click without throwing, pending cart confirmation */
+      const attempted: MeliSelection[] = []
 
-    for (const selection of selections) {
-      try {
-        console.log(`Agregando a Mercado Libre: ${selection.productName} (x${selection.quantity})`)
+      for (const selection of selections) {
+        if (page.isClosed()) throw new Error('Se alcanzó el límite de tiempo de la operación.')
+        try {
+          console.log(`Agregando a Mercado Libre: ${selection.productName} (x${selection.quantity})`)
 
-        await page.goto(selection.url, { waitUntil: 'domcontentloaded' })
-        await delay(2500)
+          await gotoProduct(page, selection.url, 'meli')
+          await delay(2500)
 
-        if (!await isLoggedIn(page)) {
-          throw new Error(LOGGED_OUT_ERROR)
-        }
-
-        const selectedQuantity = await setQuantity(page, selection.quantity)
-        console.log(`  -> Cantidad seleccionada: ${selectedQuantity}`)
-
-        await clickAddToCart(page)
-        await delay(2500)
-
-        attempted.push(selection)
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error)
-        console.error(`  -> Error con ${selection.productName}: ${message}`)
-        result.failed.push({ id: selection.productId, name: selection.productName, error: message })
-
-        // A logged-out session fails every remaining product the same way
-        if (message === LOGGED_OUT_ERROR) {
-          for (const pending of selections.slice(selections.indexOf(selection) + 1)) {
-            result.failed.push({ id: pending.productId, name: pending.productName, error: message })
+          if (!await isLoggedIn(page)) {
+            throw new Error(LOGGED_OUT_ERROR)
           }
-          return result
+
+          const selectedQuantity = await setQuantity(page, selection.quantity)
+          console.log(`  -> Cantidad seleccionada: ${selectedQuantity}`)
+
+          await clickAddToCart(page)
+          await delay(2500)
+
+          attempted.push(selection)
+        } catch (error) {
+          const message = error instanceof Error && error.message === LOGGED_OUT_ERROR ? LOGGED_OUT_ERROR : 'No se pudo agregar el producto. Revisá la sesión y el enlace.'
+          console.error(`  -> Error con ${selection.productName}: ${message}`)
+          result.failed.push({ id: selection.productId, name: selection.productName, error: message })
+
+          // A logged-out session fails every remaining product the same way
+          if (message === LOGGED_OUT_ERROR) {
+            for (const pending of selections.slice(selections.indexOf(selection) + 1)) {
+              result.failed.push({ id: pending.productId, name: pending.productName, error: message })
+            }
+            return result
+          }
+        }
+
+        await delay(DELAY_BETWEEN_PRODUCTS)
+      }
+
+      // Confirm against the real cart instead of trusting the clicks
+      const cartItems = await readCartItems(page)
+
+      for (const selection of attempted) {
+        const itemId = extractItemId(selection.url)
+        const entry = itemId ? cartItems.find(item => item.id === itemId) : undefined
+
+        if (!entry) {
+          result.failed.push({
+            id: selection.productId,
+            name: selection.productName,
+            error: 'No aparece en el carrito de Mercado Libre',
+          })
+        } else if (entry.quantity < selection.quantity) {
+          result.failed.push({
+            id: selection.productId,
+            name: selection.productName,
+            error: `Cantidad esperada: ${selection.quantity}, en el carrito: ${entry.quantity}`,
+          })
+        } else {
+          result.success.push({ id: selection.productId, name: selection.productName })
         }
       }
 
-      await delay(DELAY_BETWEEN_PRODUCTS)
-    }
-
-    // Confirm against the real cart instead of trusting the clicks
-    const cartItems = await readCartItems(page)
-
-    for (const selection of attempted) {
-      const itemId = extractItemId(selection.url)
-      const entry = itemId ? cartItems.find(item => item.id === itemId) : undefined
-
-      if (!entry) {
-        result.failed.push({
-          id: selection.productId,
-          name: selection.productName,
-          error: 'No aparece en el carrito de Mercado Libre',
-        })
-      } else if (entry.quantity < selection.quantity) {
-        result.failed.push({
-          id: selection.productId,
-          name: selection.productName,
-          error: `Cantidad esperada: ${selection.quantity}, en el carrito: ${entry.quantity}`,
-        })
-      } else {
-        result.success.push({ id: selection.productId, name: selection.productName })
-      }
-    }
-
-    console.log(`\nResumen Mercado Libre: ${result.success.length} exitosos, ${result.failed.length} fallidos`)
-  } catch (error) {
-    throw describeConnectionError(error)
+      console.log(`\nResumen Mercado Libre: ${result.success.length} exitosos, ${result.failed.length} fallidos`)
+      return result
+    })
+  } catch {
+    throw describeConnectionError()
   }
-
-  return result
 }

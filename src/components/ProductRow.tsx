@@ -1,5 +1,7 @@
 'use client'
 
+import { isSafeProductUrl } from '@/lib/storeUrls'
+
 import { ProductState } from '@/types/product'
 
 interface ProductRowProps {
@@ -42,7 +44,7 @@ export function ProductRow({
     >
       {/* Product Name */}
       <div className="flex items-center min-h-[44px]">
-        {product.url ? (
+        {isSafeProductUrl(product.url) ? (
           <a
             href={product.url}
             target="_blank"

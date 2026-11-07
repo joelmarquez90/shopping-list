@@ -1,103 +1,64 @@
 # Lista de Compras
 
-A modern shopping list web application built with Next.js, designed to replace Google Spreadsheets workflows for monthly grocery shopping.
+Aplicación de compras mensuales con Next.js 16, React 19, TypeScript 6 y Tailwind 4. Incluye acceso con Google, catálogo administrable en Firestore, estado por usuario y automatización local opcional de MasOnline y Mercado Libre.
 
-## Features
+## Desarrollo
 
-- **Product List View**: Display products with name, quantity, and supermarket links
-- **"Hay" (Have It) Toggle**: Mark products you already have at home
-- **"Comprado" (Purchased) Toggle**: Track products added to your cart
-- **Quantity Editor**: Adjust quantities for each product (0-99)
-- **Smart Filtering**: Filter by All / Pending / Missing items
-- **External Links**: Click product names to open supermarket pages
-- **Dark Mode**: Dark theme by default
-- **Responsive Design**: Mobile-first, works on all devices
-
-## Tech Stack
-
-- **Framework**: Next.js 16+ (App Router)
-- **Language**: TypeScript 5.x (strict mode)
-- **Styling**: Tailwind CSS 4.x
-- **Runtime**: React 19
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-
-### Installation
+Requiere Node 24 (>=24.12; versión fijada en `.nvmrc`).
 
 ```bash
-# Clone the repository
-git clone https://github.com/joelmarquez90/shopping-list.git
-cd shopping-list
-
-# Install dependencies
-npm install
-
-# Start development server
+nvm use
+npm ci
+cp .env.local.example .env.local
+# Completar la configuración pública de Firebase y la lista de emails permitidos.
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Build for Production
+Abrir [http://localhost:3000](http://localhost:3000). El servidor escucha únicamente en loopback. Para un despliegue web, configurar explícitamente el binding y el proxy de la plataforma; la automatización sigue siendo una función local.
 
 ```bash
+npm run lint
+npm run typecheck
+npm test
 npm run build
 npm start
+npm audit
 ```
 
-## Project Structure
+Las fuentes Geist están instaladas localmente: el build no descarga fuentes de Google. Sin configuración de Firebase, la app muestra el acceso y los errores de configuración sin fallar al compilar.
 
-```
-src/
-├── app/
-│   ├── layout.tsx      # Root layout with dark mode
-│   ├── page.tsx        # Main shopping list page
-│   └── globals.css     # Global styles + CSS variables
-├── components/
-│   ├── FilterBar.tsx   # Filter buttons (Todos/Pendientes/Faltantes)
-│   ├── ProductList.tsx # Product list container
-│   └── ProductRow.tsx  # Individual product row
-├── data/
-│   └── products.ts     # Hardcoded product catalog
-├── hooks/
-│   └── useProductState.ts # State management hook
-└── types/
-    └── product.ts      # TypeScript interfaces
+## Datos y permisos
+
+El catálogo se carga de Firestore; `src/data/products.ts` conserva el catálogo inicial para la migración. Los productos son públicos por diseño. Las reglas restringen las modificaciones del catálogo al email administrador verificado configurado en `firestore.rules`. `NEXT_PUBLIC_ALLOWED_EMAILS` controla el acceso a la interfaz; no reemplaza las reglas de autorización del backend.
+
+El estado de compras se guarda en `shoppingState/{uid}` y solo su propietario puede leerlo o modificarlo. Los filtros son Todos, Pendientes (`!hay`) y Faltantes (`!hay && !comprado`); las cantidades admitidas son 0–99.
+
+Después de revisar las reglas, publicarlas con la CLI local:
+
+```bash
+npm exec --no -- firebase deploy --only firestore:rules --project TU_PROYECTO
 ```
 
-## Usage
+Este comando modifica Firebase. Las reglas nuevas solo se aplican al publicarlas; actualizar este repositorio no cambia el proyecto remoto.
 
-1. **Review Products**: Browse the full product list
-2. **Mark "Hay"**: Check products you already have (they'll be dimmed)
-3. **Set Quantities**: Adjust how many of each item you need
-4. **Shop**: Click product names to open supermarket pages
-5. **Mark "Comprado"**: Check off items as you add them to cart
-6. **Filter**: Use filters to see only pending or missing items
+## Automatización local
 
-## Filter Logic
+Está deshabilitada por defecto. Requiere Google Chrome instalado en la misma máquina donde corre Next.js y un único propietario del perfil del navegador.
 
-| Filter | Shows |
-|--------|-------|
-| **Todos** | All products |
-| **Pendientes** | Products NOT marked as "Hay" |
-| **Faltantes** | Products NOT marked as "Hay" AND NOT marked as "Comprado" |
+En `.env.local`, configurar `ENABLE_BROWSER_AUTOMATION=true`, `AUTOMATION_OWNER_UID` con el UID de Firebase del propietario y `AUTOMATION_ORIGIN=http://localhost:3000` (o el puerto local utilizado). Configurar también `FIREBASE_PROJECT_ID` y las credenciales de aplicación de Firebase Admin, mediante workload identity o `GOOGLE_APPLICATION_CREDENTIALS` apuntando a un archivo privado fuera del repositorio. Firebase Admin verifica firma, proyecto, expiración y revocación del token; exige UID propietario y email verificado. Nunca publicar credenciales mediante variables `NEXT_PUBLIC_*`.
 
-## Data Source
+Usar «Sesión» para abrir el perfil dedicado de Chrome e iniciar sesión en las tiendas. Playwright controla ese perfil por un pipe privado; ya no hay puerto CDP 9222. Antes de la primera ejecución con esta versión, cerrar el Chrome antiguo abierto por la aplicación. El perfil no debe abrirse simultáneamente desde otros procesos. Se conserva en `.masonline-session/`, con permisos restringidos, y debe excluirse de cualquier despliegue o copia pública.
 
-Products are loaded from `baselist.csv` which contains the product catalog extracted from the original Google Spreadsheet. All URLs point to [masonline.com.ar](https://www.masonline.com.ar).
+Las rutas requieren token Firebase y origen local exacto. Solo navegan a HTTPS de las tiendas permitidas; validan productos, redirecciones, cantidades y tamaños. Procesan un trabajo a la vez, con un intervalo mínimo de tres segundos y un máximo de diez minutos por operación. La instancia local debe ejecutar un único proceso de Next.js; el lock está en memoria y no coordina varias instancias.
 
-## MVP Limitations
+MasOnline agrega productos con URL configurada. Mercado Libre busca candidatos, pide confirmación y agrega únicamente las selecciones. La automatización no completa compras ni pagos. Cambios en el DOM de las tiendas pueden requerir actualizar los selectores.
 
-- No authentication
-- No data persistence (state resets on page refresh)
-- Products are hardcoded
-- Single user only
+## Migración inicial
 
-## License
+`npm run seed` usa el runner `tsx` declarado y fijado en el lockfile, sin descargas implícitas de ejecutables. Carga `serviceAccountKey.json` desde la raíz y escribe el catálogo mediante Firebase Admin, omitiendo las reglas del cliente. Ejecutar solo intencionalmente con las credenciales del proyecto correcto; no incluir el archivo en Git ni en builds.
 
-Private project.
+## Dependencias
+
+Las versiones directas están fijadas y `package-lock.json` conserva la resolución reproducible. TypeScript 6 y ESLint 9 son las versiones más recientes compatibles con los plugins de Next.js instalados; TypeScript 7 y ESLint 10 requieren soporte de esos plugins.
+
+Los overrides de `@grpc/grpc-js`, `glob`, `minimatch`, `@opentelemetry/core` y `uuid` eliminan avisos transitivos que los paquetes superiores todavía arrastran. Revisarlos en futuras actualizaciones y retirarlos cuando ya no sean necesarios. Las verificaciones incluyen lint, tipos, build, pruebas de seguridad y carga de la CLI Firebase; no prueban operaciones remotas de Firebase ni compras reales.

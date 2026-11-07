@@ -32,6 +32,8 @@ export function UserMenu({
 
       {/* User Avatar */}
       {user.photoURL ? (
+        // Firebase controls this image URL; avoid proxying arbitrary profile images through the server.
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={user.photoURL}
           alt={user.displayName || 'User avatar'}

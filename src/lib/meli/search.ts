@@ -1,5 +1,6 @@
 import { Page } from 'playwright'
-import { connectToChrome, delay, describeConnectionError } from '@/lib/browser/chromeSession'
+import { withStorePage, delay, describeConnectionError } from '@/lib/browser/chromeSession'
+import { isProductUrl } from '@/lib/storeUrls'
 import { MeliCandidate, MeliSearchItem, MeliSearchProduct } from '@/types/meli'
 
 const NAVIGATION_TIMEOUT = 45000
@@ -102,55 +103,55 @@ export async function searchCandidates(products: MeliSearchProduct[]): Promise<M
   if (products.length === 0) return items
 
   try {
-    const { context } = await connectToChrome()
-    const page = context.pages()[0] || await context.newPage()
-    page.setDefaultNavigationTimeout(NAVIGATION_TIMEOUT)
+    return await withStorePage('meli', async page => {
+      page.setDefaultNavigationTimeout(NAVIGATION_TIMEOUT)
 
-    // A background tab gets its rendering throttled, which starves the scraper
-    await page.bringToFront()
+      // A background tab gets its rendering throttled, which starves the scraper
+      await page.bringToFront()
 
-    for (const product of products) {
-      const item: MeliSearchItem = {
-        productId: product.id,
-        productName: product.name,
-        quantity: product.quantity,
-        candidates: [],
-      }
-
-      try {
-        const slug = toSearchSlug(product.name)
-        if (!slug) {
-          throw new Error('El nombre no genera una busqueda valida')
+      for (const product of products) {
+        if (page.isClosed()) throw new Error('Se alcanzó el límite de tiempo de la operación.')
+        const item: MeliSearchItem = {
+          productId: product.id,
+          productName: product.name,
+          quantity: product.quantity,
+          candidates: [],
         }
 
-        console.log(`Buscando en Mercado Libre: ${product.name}`)
-        await page.goto(`https://listado.mercadolibre.com.ar/${slug}`, { waitUntil: 'domcontentloaded' })
+        try {
+          const slug = toSearchSlug(product.name)
+          if (!slug) {
+            throw new Error('El nombre no genera una busqueda valida')
+          }
 
-        // Wait for the results to actually render instead of guessing a delay.
-        // 'attached' and not the default 'visible': the scraper reads the DOM,
-        // and a background tab renders nothing while still building it.
-        const hasResults = await page
-          .waitForSelector(RESULT_ITEM_SELECTOR, { state: 'attached', timeout: RESULTS_TIMEOUT })
-          .then(() => true)
-          .catch(() => false)
+          console.log(`Buscando en Mercado Libre: ${product.name}`)
+          await page.goto(`https://listado.mercadolibre.com.ar/${slug}`, { waitUntil: 'domcontentloaded' })
 
-        item.candidates = hasResults ? await scrapeCandidates(page, MAX_CANDIDATES) : []
-        if (item.candidates.length === 0) {
-          item.error = 'Sin resultados en Mercado Libre'
+          // Wait for the results to actually render instead of guessing a delay.
+          // 'attached' and not the default 'visible': the scraper reads the DOM,
+          // and a background tab renders nothing while still building it.
+          const hasResults = await page
+            .waitForSelector(RESULT_ITEM_SELECTOR, { state: 'attached', timeout: RESULTS_TIMEOUT })
+            .then(() => true)
+            .catch(() => false)
+
+          item.candidates = hasResults ? (await scrapeCandidates(page, MAX_CANDIDATES)).filter(candidate => isProductUrl(candidate.url, 'meli')) : []
+          if (item.candidates.length === 0) {
+            item.error = 'Sin resultados en Mercado Libre'
+          }
+        } catch {
+          item.error = 'No se pudo buscar el producto. Revisá la sesión local.'
+          console.error(`  -> Error buscando ${product.name}: ${item.error}`)
         }
-      } catch (error) {
-        item.error = error instanceof Error ? error.message : String(error)
-        console.error(`  -> Error buscando ${product.name}: ${item.error}`)
+
+        items.push(item)
+        await delay(DELAY_BETWEEN_SEARCHES)
       }
 
-      items.push(item)
-      await delay(DELAY_BETWEEN_SEARCHES)
-    }
-
-    console.log(`Busqueda terminada: ${items.filter(i => i.candidates.length > 0).length}/${items.length} con resultados`)
-  } catch (error) {
-    throw describeConnectionError(error)
+      console.log(`Busqueda terminada: ${items.filter(i => i.candidates.length > 0).length}/${items.length} con resultados`)
+      return items
+    })
+  } catch {
+    throw describeConnectionError()
   }
-
-  return items
 }

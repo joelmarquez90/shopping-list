@@ -6,7 +6,7 @@ This file provides context for LLMs and AI coding assistants working on this cod
 
 **Purpose**: Shopping list web app replacing Google Spreadsheets workflow for monthly grocery management.
 
-**Current State**: MVP complete with all 6 user stories implemented. No authentication, no persistence.
+**Current State**: Firebase Google authentication, Firestore product catalog and per-user shopping state, admin CRUD, and optional owner-only local store automation.
 
 **Branch**: `001-mvp-shopping-list`
 
@@ -14,7 +14,8 @@ This file provides context for LLMs and AI coding assistants working on this cod
 
 ### Tech Stack
 - **Next.js 16+** with App Router (not Pages Router)
-- **TypeScript 5.x** with strict mode enabled
+- **TypeScript 6.x** with strict mode enabled
+- **Node.js 24** (>=24.12; see `.nvmrc`)
 - **Tailwind CSS 4.x** with class-based dark mode
 - **React 19** with hooks (useState, useCallback, useMemo)
 
@@ -25,6 +26,8 @@ src/
 ├── components/    # React components
 ├── data/          # Static data (products.ts)
 ├── hooks/         # Custom React hooks
+├── services/      # Firebase data access
+├── lib/server/    # Server authentication and input validation
 └── types/         # TypeScript interfaces
 ```
 
@@ -83,7 +86,9 @@ type FilterType = 'ALL' | 'PENDING' | 'MISSING'
 ### State Management
 - Local state via `useState` in custom hook
 - No external state library (Redux, Zustand)
-- State resets on page refresh (intentional for MVP)
+- Shopping state persists in Firestore per Firebase UID
+- Automation APIs verify Firebase tokens, require the configured owner UID and exact local Origin, and validate all inputs
+- Browser automation uses a private Playwright pipe, never an open CDP port
 
 ## Design Requirements
 
@@ -134,10 +139,8 @@ Full feature specification: `specs/001-mvp-shopping-list/spec.md`
 Implementation plan: `specs/001-mvp-shopping-list/plan.md`
 Task breakdown: `specs/001-mvp-shopping-list/tasks.md`
 
-## Future Iterations (Not in MVP)
+## Future Iterations
 
-- Firebase Authentication
-- Firestore persistence
 - Receipt upload with OCR
 - Price tracking and inflation history
 - MCP integration for AI assistants
@@ -149,4 +152,6 @@ npm run dev      # Development server (localhost:3000)
 npm run build    # Production build
 npm run start    # Production server
 npm run lint     # ESLint check
+npm run typecheck # TypeScript check
+npm test         # Offline security regression tests
 ```

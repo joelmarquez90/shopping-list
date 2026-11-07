@@ -76,6 +76,7 @@ export function isAuthorizedUser(
 ): user is User & { email: string } {
   return user !== null &&
          user.email !== null &&
+         user.emailVerified &&
          allowedEmails.includes(user.email)
 }
 

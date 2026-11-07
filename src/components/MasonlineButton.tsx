@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { automationFetch } from '@/lib/automationClient'
+import { isProductUrl } from '@/lib/storeUrls'
 import { ProductState } from '@/types/product'
 
 interface MasonlineButtonProps {
@@ -26,15 +28,18 @@ export function MasonlineButton({ products, onMarkComprado }: MasonlineButtonPro
   const [result, setResult] = useState<Result | null>(null)
 
   const eligible = products.filter(
-    p => !p.hay && !p.comprado && p.quantity > 0 && p.url
+    p => !p.hay && !p.comprado && p.quantity > 0 && isProductUrl(p.url, 'masonline')
   )
 
   const handleLogin = async () => {
     setLoginLoading(true)
     try {
-      await fetch('/api/masonline/login', { method: 'POST' })
-    } catch {
-      // Browser opened is enough, ignore network errors
+      const response = await automationFetch('/api/masonline/login')
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'No se pudo abrir la sesión.')
+    } catch (error) {
+      setCartStatus('error')
+      setResult({ success: [], failed: [{ id: '', name: 'Sesión', error: error instanceof Error ? error.message : 'Error de red' }] })
     } finally {
       setLoginLoading(false)
     }
@@ -47,17 +52,8 @@ export function MasonlineButton({ products, onMarkComprado }: MasonlineButtonPro
     setResult(null)
 
     try {
-      const response = await fetch('/api/masonline/add-to-cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          products: eligible.map(p => ({
-            id: p.id,
-            name: p.name,
-            url: p.url,
-            quantity: p.quantity
-          }))
-        })
+      const response = await automationFetch('/api/masonline/add-to-cart', {
+        products: eligible.map(p => ({ id: p.id, name: p.name, url: p.url, quantity: p.quantity }))
       })
 
       const data: Result = await response.json()

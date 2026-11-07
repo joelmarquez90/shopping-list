@@ -1,77 +1,65 @@
-import { chromium, BrowserContext } from 'playwright'
-import { execFile } from 'child_process'
-import path from 'path'
-
-/**
- * Shared Chrome/CDP session used by every store automation.
- *
- * A single Chrome instance with a persistent profile keeps the user logged in
- * to all the stores at once, so both MasOnline and Mercado Libre connect to the
- * same debugging port.
- */
+import { chromium, type BrowserContext, type Page } from 'playwright'
+import { mkdir, lstat, chmod } from 'node:fs/promises'
+import path from 'node:path'
+import { isProductUrl, isStoreUrl, type Store } from '../storeUrls'
 
 const USER_DATA_DIR = path.join(process.cwd(), '.masonline-session')
-const CDP_PORT = 9222
-const CDP_URL = `http://localhost:${CDP_PORT}`
-
-const CHROME_PATH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+const shared = globalThis as typeof globalThis & { storeBrowser?: BrowserContext }
 
 export function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function launchChromeProcess(url: string): void {
-  execFile(CHROME_PATH, [
-    `--remote-debugging-port=${CDP_PORT}`,
-    `--user-data-dir=${USER_DATA_DIR}`,
-    url
-  ], (error) => {
-    if (error) {
-      console.error('Error launching Chrome:', error.message)
-    }
-  })
-}
-
-async function waitForCDP(maxWaitMs = 20000): Promise<void> {
-  const start = Date.now()
-  while (Date.now() - start < maxWaitMs) {
-    try {
-      const res = await fetch(`${CDP_URL}/json/version`, { signal: AbortSignal.timeout(1000) })
-      if (res.ok) return
-    } catch {
-      // not ready yet
-    }
-    await delay(500)
-  }
-  throw new Error('Chrome no arrancó a tiempo. Intentá de nuevo.')
-}
-
-/**
- * Open Chrome at the given URL and wait until CDP is reachable.
- * If Chrome is already running with this profile, the URL opens in a new tab
- * of the existing instance.
- */
+/** Playwright's private pipe replaces the unauthenticated localhost CDP port. */
 export async function openBrowserAt(url: string): Promise<void> {
-  launchChromeProcess(url)
-  await waitForCDP()
+  if (!isStoreUrl(url, 'masonline') && !isStoreUrl(url, 'meli')) throw new Error('Tienda no permitida.')
+  if (!shared.storeBrowser) {
+    await mkdir(USER_DATA_DIR, { recursive: true, mode: 0o700 })
+    if (!(await lstat(USER_DATA_DIR)).isDirectory()) throw new Error('Perfil de navegador inválido.')
+    await chmod(USER_DATA_DIR, 0o700)
+    const context = await chromium.launchPersistentContext(USER_DATA_DIR, {
+      channel: 'chrome', headless: false, acceptDownloads: false,
+      serviceWorkers: 'block', timeout: 30000,
+    })
+    context.on('close', () => { if (shared.storeBrowser === context) shared.storeBrowser = undefined })
+    shared.storeBrowser = context
+  }
+  const page = await shared.storeBrowser.newPage()
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
 }
 
 export async function connectToChrome(): Promise<{ context: BrowserContext }> {
-  const browser = await chromium.connectOverCDP(CDP_URL)
-  const context = browser.contexts()[0]
-  if (!context) {
-    throw new Error('No se encontro un contexto de Chrome. Asegurate de abrir Chrome primero con el boton "Sesion".')
-  }
-  return { context }
+  if (!shared.storeBrowser) throw new Error('Usá el botón «Sesión» para abrir el navegador local.')
+  return { context: shared.storeBrowser }
 }
 
-/**
- * Normalize a connection error into the actionable message the UI shows.
- */
-export function describeConnectionError(error: unknown): Error {
-  const msg = error instanceof Error ? error.message : String(error)
-  if (msg.includes('ECONNREFUSED') || msg.includes('connect')) {
-    return new Error('Chrome no esta corriendo. Usa el boton "Sesion" primero para abrir Chrome.')
+/** Every job owns a tab, a total deadline, and a policy covering redirects too. */
+export async function withStorePage<T>(store: Store, job: (page: Page) => Promise<T>): Promise<T> {
+  const { context } = await connectToChrome()
+  const page = await context.newPage()
+  await page.route('**/*', async route => {
+    const request = route.request()
+    if (request.isNavigationRequest() && !isStoreUrl(request.url(), store)) {
+      await route.abort('blockedbyclient')
+    } else {
+      await route.continue()
+    }
+  })
+  const timer = setTimeout(() => { void page.close().catch(() => {}) }, 10 * 60 * 1000)
+  try {
+    return await job(page)
+  } finally {
+    clearTimeout(timer)
+    await page.close().catch(() => {})
   }
-  return error instanceof Error ? error : new Error(msg)
+}
+
+export async function gotoProduct(page: Page, url: string, store: Store): Promise<void> {
+  if (!isProductUrl(url, store)) throw new Error('URL de producto no permitida.')
+  await page.goto(url, { waitUntil: 'domcontentloaded' })
+  if (!isProductUrl(page.url(), store)) throw new Error('El producto redirigió a una página no permitida.')
+}
+
+export function describeConnectionError(): Error {
+  return new Error('No se pudo completar la operación. Revisá la sesión del navegador e intentá de nuevo.')
 }

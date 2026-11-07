@@ -9,6 +9,7 @@ import {
   writeBatch
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { productInputError } from '@/lib/productValidation'
 import type { Product, CreateProductInput, UpdateProductInput } from '@/types/product'
 import { ServiceResult, successResult, errorResult } from '@/types/service'
 
@@ -42,8 +43,8 @@ export async function getAllProducts(): Promise<ServiceResult<Product[]>> {
     const productsCol = getProductsCollection()
     const snapshot = await getDocs(productsCol)
     const products: Product[] = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
+      ...doc.data(),
+      id: doc.id
     } as Product))
     return successResult(products)
   } catch (error) {
@@ -65,8 +66,8 @@ export async function getProduct(id: string): Promise<ServiceResult<Product>> {
     }
 
     const product: Product = {
-      id: docSnap.id,
-      ...docSnap.data()
+      ...docSnap.data(),
+      id: docSnap.id
     } as Product
 
     return successResult(product)
@@ -107,6 +108,8 @@ export function generateSlug(name: string): string {
  */
 export async function createProduct(input: CreateProductInput): Promise<ServiceResult<Product>> {
   try {
+    const validationError = productInputError(input)
+    if (validationError) return errorResult(validationError)
     // Validate required fields
     if (!input.name || input.name.trim() === '') {
       return errorResult('Product name is required')
@@ -118,6 +121,7 @@ export async function createProduct(input: CreateProductInput): Promise<ServiceR
 
     // Generate ID from name
     const id = generateSlug(input.name)
+    if (!id) return errorResult('El nombre debe incluir letras o números.')
 
     // Check for duplicate
     if (await productExists(id)) {
@@ -127,7 +131,7 @@ export async function createProduct(input: CreateProductInput): Promise<ServiceR
     const product: Product = {
       id,
       name: input.name.trim(),
-      url: input.url || undefined,
+      ...(input.url ? { url: input.url } : {}),
       defaultQuantity: input.defaultQuantity ?? 0,
       defaultHay: input.defaultHay ?? false
     }
@@ -150,6 +154,8 @@ export async function updateProduct(
   input: UpdateProductInput
 ): Promise<ServiceResult<Product>> {
   try {
+    const validationError = productInputError(input)
+    if (validationError) return errorResult(validationError)
     // Check product exists
     const existing = await getProduct(id)
     if (!existing.success || !existing.data) {
@@ -167,8 +173,7 @@ export async function updateProduct(
     }
 
     // Build update object with only defined fields
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updates: Record<string, any> = {}
+    const updates: UpdateProductInput = {}
     if (input.name !== undefined) updates.name = input.name.trim()
     if (input.url !== undefined) updates.url = input.url || ''
     if (input.defaultQuantity !== undefined) updates.defaultQuantity = input.defaultQuantity

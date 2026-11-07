@@ -13,7 +13,7 @@ import {
   AuthUser,
   AuthError,
   AuthContextValue,
-  ALLOWED_EMAILS,
+  isAuthorizedUser,
   AUTH_ERROR_MESSAGES,
   mapFirebaseError,
 } from '@/types/auth'
@@ -38,19 +38,18 @@ function toAuthUser(user: User): AuthUser {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => auth !== null)
   const [error, setError] = useState<AuthError | null>(null)
 
   // Listen for auth state changes
   useEffect(() => {
     // If Firebase is not configured, stop loading immediately
     if (!auth) {
-      setLoading(false)
       return
     }
 
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser && firebaseUser.email && ALLOWED_EMAILS.includes(firebaseUser.email)) {
+      if (isAuthorizedUser(firebaseUser)) {
         setUser(toAuthUser(firebaseUser))
       } else {
         setUser(null)
@@ -79,7 +78,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const firebaseUser = result.user
 
       // Check if email is in allowlist
-      if (!firebaseUser.email || !ALLOWED_EMAILS.includes(firebaseUser.email)) {
+      if (!isAuthorizedUser(firebaseUser)) {
         // Sign out unauthorized user
         await firebaseSignOut(auth)
         setUser(null)

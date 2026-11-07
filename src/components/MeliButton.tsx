@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { automationFetch } from '@/lib/automationClient'
 import { ProductState } from '@/types/product'
 import { MeliCartResult, MeliSearchItem, MeliSelection } from '@/types/meli'
 import { MeliCartModal } from '@/components/MeliCartModal'
@@ -33,12 +34,8 @@ export function MeliButton({ products, onMarkComprado }: MeliButtonProps) {
     setError(null)
 
     try {
-      const response = await fetch('/api/meli/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          products: eligible.map(p => ({ id: p.id, name: p.name, quantity: p.quantity }))
-        })
+      const response = await automationFetch('/api/meli/search', {
+        products: eligible.map(p => ({ id: p.id, name: p.name, quantity: p.quantity }))
       })
 
       const data = await response.json()
@@ -61,11 +58,7 @@ export function MeliButton({ products, onMarkComprado }: MeliButtonProps) {
     setStatus('adding')
 
     try {
-      const response = await fetch('/api/meli/add-to-cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ selections })
-      })
+      const response = await automationFetch('/api/meli/add-to-cart', { selections })
 
       const data = await response.json()
 

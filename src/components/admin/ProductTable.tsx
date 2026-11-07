@@ -1,5 +1,7 @@
 'use client'
 
+import { isSafeProductUrl } from '@/lib/storeUrls'
+
 import type { Product } from '@/types/product'
 
 interface ProductTableProps {
@@ -52,7 +54,7 @@ export function ProductTable({
                 </span>
               </td>
               <td className="px-4 py-3 hidden md:table-cell">
-                {product.url ? (
+                {isSafeProductUrl(product.url) ? (
                   <a
                     href={product.url}
                     target="_blank"
