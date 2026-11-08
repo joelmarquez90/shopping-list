@@ -51,7 +51,7 @@ Usar «Sesión» para abrir un Chrome normal con el perfil dedicado e iniciar se
 
 Las rutas requieren token Firebase y origen local exacto. Solo navegan a HTTPS de las tiendas permitidas; validan productos, redirecciones, cantidades y tamaños. Procesan un trabajo a la vez, con un intervalo mínimo de tres segundos y un máximo de diez minutos por operación. La instancia local debe ejecutar un único proceso de Next.js; el lock está en memoria y no coordina varias instancias.
 
-MasOnline agrega productos con URL configurada. Mercado Libre busca candidatos, pide confirmación y agrega únicamente las selecciones. La automatización no completa compras ni pagos. Cambios en el DOM de las tiendas pueden requerir actualizar los selectores.
+MasOnline agrega productos con URL configurada. Mercado Libre busca candidatos, pide confirmación y agrega únicamente las selecciones. Si la búsqueda redirige a CAPTCHA o login, detiene el lote y abre la búsqueda original en Chrome normal para que el usuario complete ese paso; no resuelve verificaciones automáticamente ni las informa como «sin resultados». Después se puede volver a pulsar «Mercado Libre» para reintentar con el mismo perfil. La automatización no completa compras ni pagos. Cambios en el DOM de las tiendas pueden requerir actualizar los selectores.
 
 ## Migración inicial
 

@@ -2,7 +2,29 @@ export type Store = 'masonline' | 'meli'
 
 const HOSTS: Record<Store, ReadonlySet<string>> = {
   masonline: new Set(['www.masonline.com.ar', 'masonline.com.ar']),
-  meli: new Set(['www.mercadolibre.com.ar', 'articulo.mercadolibre.com.ar', 'listado.mercadolibre.com.ar']),
+  meli: new Set(['mercadolibre.com.ar', 'www.mercadolibre.com.ar', 'articulo.mercadolibre.com.ar', 'listado.mercadolibre.com.ar']),
+}
+
+/** Account redirects are navigation destinations, never product URLs. */
+export function isStoreNavigationUrl(value: unknown, store: Store): value is string {
+  if (isStoreUrl(value, store)) return true
+  if (store !== 'meli' || typeof value !== 'string' || value.length > 8192) return false
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' && !url.username && !url.password && !url.port &&
+      (HOSTS.meli.has(url.hostname) || ['mercadolibre.com', 'www.mercadolibre.com'].includes(url.hostname)) &&
+      /^\/(?:jms\/mla|captcha|login)(?:\/|$)/.test(url.pathname)
+  } catch {
+    return false
+  }
+}
+
+export function meliAccessStep(value: string): 'verification' | 'login' | null {
+  if (!isStoreNavigationUrl(value, 'meli')) return null
+  const pathname = new URL(value).pathname
+  if (/^\/captcha(?:\/|$)/.test(pathname)) return 'verification'
+  if (/^\/(?:jms\/mla|login)(?:\/|$)/.test(pathname)) return 'login'
+  return null
 }
 
 export function isStoreUrl(value: unknown, store: Store): value is string {

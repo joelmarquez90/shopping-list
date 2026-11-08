@@ -2,7 +2,7 @@ import { chromium, type BrowserContext, type Page } from 'playwright'
 import childProcess, { type ChildProcess } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { isProductUrl, isStoreUrl, type Store } from '../storeUrls'
+import { isProductUrl, isStoreUrl, isStoreNavigationUrl, meliAccessStep, type Store } from '../storeUrls'
 import { ApiError } from '../server/automationPolicy'
 
 const USER_DATA_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), '.masonline-session')
@@ -104,7 +104,7 @@ export async function withStorePage<T>(store: Store, job: (page: Page) => Promis
   const page = await context.newPage()
   await page.route('**/*', async route => {
     const request = route.request()
-    if (request.isNavigationRequest() && !isStoreUrl(request.url(), store)) {
+    if (request.isNavigationRequest() && !isStoreNavigationUrl(request.url(), store)) {
       await route.abort('blockedbyclient')
     } else {
       await route.continue()
@@ -117,6 +117,18 @@ export async function withStorePage<T>(store: Store, job: (page: Page) => Promis
     clearTimeout(timer)
     await page.close().catch(() => {})
   }
+}
+
+/** Pause automation and let the human complete Mercado Libre's access checks in normal Chrome. */
+export async function handoffMeliAccess(page: Page, retryUrl: string): Promise<void> {
+  const step = meliAccessStep(page.url())
+  if (!step) return
+  if (!isStoreUrl(retryUrl, 'meli')) throw new Error('Tienda no permitida.')
+  // Revisit the original store URL instead of launching an untrusted redirect or account token.
+  await openBrowserAt(retryUrl)
+  throw new ApiError(409, step === 'verification'
+    ? 'Mercado Libre pidió una verificación de seguridad. Se abrió Chrome normal: completá allí la verificación y volvé a tocar «Mercado Libre».'
+    : 'Mercado Libre pidió iniciar sesión. Se abrió Chrome normal: iniciá sesión allí y volvé a tocar «Mercado Libre».')
 }
 
 export async function gotoProduct(page: Page, url: string, store: Store): Promise<void> {

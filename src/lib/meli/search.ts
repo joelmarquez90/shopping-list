@@ -1,6 +1,7 @@
 import { Page } from 'playwright'
-import { withStorePage, delay, describeConnectionError } from '@/lib/browser/chromeSession'
+import { withStorePage, delay, describeConnectionError, handoffMeliAccess } from '@/lib/browser/chromeSession'
 import { isProductUrl } from '@/lib/storeUrls'
+import { ApiError } from '@/lib/server/automationPolicy'
 import { MeliCandidate, MeliSearchItem, MeliSearchProduct } from '@/types/meli'
 
 const NAVIGATION_TIMEOUT = 45000
@@ -125,7 +126,9 @@ export async function searchCandidates(products: MeliSearchProduct[]): Promise<M
           }
 
           console.log(`Buscando en Mercado Libre: ${product.name}`)
-          await page.goto(`https://listado.mercadolibre.com.ar/${slug}`, { waitUntil: 'domcontentloaded' })
+          const searchUrl = `https://listado.mercadolibre.com.ar/${slug}`
+          await page.goto(searchUrl, { waitUntil: 'domcontentloaded' })
+          await handoffMeliAccess(page, searchUrl)
 
           // Wait for the results to actually render instead of guessing a delay.
           // 'attached' and not the default 'visible': the scraper reads the DOM,
@@ -135,11 +138,14 @@ export async function searchCandidates(products: MeliSearchProduct[]): Promise<M
             .then(() => true)
             .catch(() => false)
 
+          // Access checks may also redirect after the initial document has loaded.
+          await handoffMeliAccess(page, searchUrl)
           item.candidates = hasResults ? (await scrapeCandidates(page, MAX_CANDIDATES)).filter(candidate => isProductUrl(candidate.url, 'meli')) : []
           if (item.candidates.length === 0) {
             item.error = 'Sin resultados en Mercado Libre'
           }
-        } catch {
+        } catch (error) {
+          if (error instanceof ApiError) throw error
           item.error = 'No se pudo buscar el producto. Revisá la sesión local.'
           console.error(`  -> Error buscando ${product.name}: ${item.error}`)
         }

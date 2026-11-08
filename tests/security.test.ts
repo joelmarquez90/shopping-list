@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
 import { isShoppingItems } from '../src/lib/shoppingStateValidation'
-import { isProductUrl, isStoreUrl } from '../src/lib/storeUrls'
+import { isProductUrl, isStoreUrl, isStoreNavigationUrl, meliAccessStep } from '../src/lib/storeUrls'
 import { products } from '../src/data/products'
 import { productInputError } from '../src/lib/productValidation'
 import { ApiError, assertAutomationOwner, assertAutomationRequest, readAutomationBody, withAutomationLock } from '../src/lib/server/automationPolicy'
@@ -34,6 +34,24 @@ test('store URLs reject hostile schemes, hosts, credentials, ports and unrelated
 
 test('the existing catalog remains accepted by the destination policy', () => {
   for (const p of products) if (p.url) assert.equal(isProductUrl(p.url, 'masonline'), true, p.url)
+})
+
+test('Mercado Libre access redirects are recognized without allowing external or account URLs as products', () => {
+  for (const host of ['mercadolibre.com.ar', 'www.mercadolibre.com.ar', 'mercadolibre.com', 'www.mercadolibre.com']) {
+    const captcha = `https://${host}/captcha/wall?go_url=https%3A%2F%2Flistado.mercadolibre.com.ar%2Fariel`
+    assert.equal(isStoreNavigationUrl(captcha, 'meli'), true)
+    assert.equal(meliAccessStep(captcha), 'verification')
+    assert.equal(isProductUrl(captcha, 'meli'), false)
+    assert.equal(meliAccessStep(`https://${host}/jms/mla/lgz/login`), 'login')
+    assert.equal(meliAccessStep(`https://${host}/login`), 'login')
+  }
+  assert.equal(isStoreNavigationUrl(`https://www.mercadolibre.com.ar/jms/mla/lgz/${'x'.repeat(3000)}`, 'meli'), true)
+  for (const url of ['https://evil.example/captcha/wall', 'http://mercadolibre.com.ar/captcha/wall', 'https://www.mercadolibre.com:444/jms/mla/login', 'https://user:pass@mercadolibre.com/jms/mla/login', 'https://mercadolibre.com.attacker.example/jms/mla/login', 'https://www.mercadolibre.com/p/MLA1234', 'https://127.0.0.1/captcha/wall']) {
+    assert.equal(isStoreNavigationUrl(url, 'meli'), false, url)
+    assert.equal(meliAccessStep(url), null, url)
+  }
+  assert.equal(meliAccessStep('https://listado.mercadolibre.com.ar/ariel'), null)
+  assert.equal(meliAccessStep('https://www.mercadolibre.com.ar/nombre/p/MLA1234'), null)
 })
 
 test('automation input rejects wrong types, excessive batches and invalid quantities', () => {
