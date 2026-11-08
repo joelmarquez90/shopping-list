@@ -150,7 +150,7 @@ export function MasonlineButton({ products, onMarkComprado }: MasonlineButtonPro
 
       {loginOpened && (
         <p role="status" className="text-xs text-muted mt-1">
-          Iniciá sesión en el Chrome que se abrió. Cuando termines, salí de ese Chrome con ⌘Q y volvé a «Comprar» o «Mercado Libre».
+          Iniciá sesión en el Chrome que se abrió. Cuando termines, volvé a «Comprar» o «Mercado Libre»: la app reiniciará ese Chrome y conservará tu sesión.
         </p>
       )}
 

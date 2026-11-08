@@ -7,7 +7,7 @@ import { ApiError } from '../server/automationPolicy'
 
 const USER_DATA_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), '.masonline-session')
 const CHROME_PATH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-const CLOSE_LOGIN_MESSAGE = 'Terminá de iniciar sesión y salí del Chrome de las tiendas con ⌘Q. Después volvé a intentar.'
+const CLOSE_LOGIN_MESSAGE = 'No se pudo cerrar el Chrome de las tiendas. Salí de ese Chrome con ⌘Q y volvé directamente a «Comprar», sin abrir «Sesión» otra vez.'
 const shared = globalThis as typeof globalThis & { storeBrowser?: BrowserContext; storeLogin?: ChildProcess }
 
 export function delay(ms: number): Promise<void> {
@@ -42,9 +42,42 @@ export async function openBrowserAt(url: string): Promise<void> {
   login.unref()
 }
 
-/** Reopen the signed-in profile only after the human has closed the login browser. */
+/** Only stop the exact child we launched, allowing Chrome to flush the signed-in profile. */
+async function finishLogin(): Promise<void> {
+  const login = shared.storeLogin
+  if (!login) return
+  if (login.exitCode !== null || login.signalCode !== null) {
+    if (shared.storeLogin === login) shared.storeLogin = undefined
+    return
+  }
+  await new Promise<void>((resolve, reject) => {
+    const cleanup = () => {
+      clearTimeout(timer)
+      login.off('exit', onExit)
+    }
+    const onExit = () => {
+      cleanup()
+      if (shared.storeLogin === login) shared.storeLogin = undefined
+      resolve()
+    }
+    const timer = setTimeout(() => {
+      cleanup()
+      reject(new ApiError(409, CLOSE_LOGIN_MESSAGE))
+    }, 10000)
+    login.once('exit', onExit)
+    try {
+      // SIGTERM requests an orderly shutdown; never force-kill or target other Chrome processes.
+      login.kill('SIGTERM')
+    } catch {
+      cleanup()
+      reject(new ApiError(409, CLOSE_LOGIN_MESSAGE))
+    }
+  })
+}
+
+/** Hand the dedicated signed-in profile from normal Chrome to the private Playwright pipe. */
 export async function connectToChrome(): Promise<{ context: BrowserContext }> {
-  if (shared.storeLogin) throw new ApiError(409, CLOSE_LOGIN_MESSAGE)
+  await finishLogin()
   if (!shared.storeBrowser) {
     await prepareProfile()
     let context: BrowserContext
@@ -57,7 +90,7 @@ export async function connectToChrome(): Promise<{ context: BrowserContext }> {
       })
     } catch {
       // Also covers a login Chrome left open across a server restart.
-      throw new ApiError(409, 'No se pudo abrir el perfil de las tiendas. Salí de ese Chrome con ⌘Q y volvé a intentar; si sigue fallando, comprobá que Google Chrome esté instalado.')
+      throw new ApiError(409, 'No se pudo abrir el perfil de las tiendas. Salí de ese Chrome con ⌘Q y volvé directamente a «Comprar», sin abrir «Sesión» otra vez. Si sigue fallando, comprobá que Google Chrome esté instalado.')
     }
     context.on('close', () => { if (shared.storeBrowser === context) shared.storeBrowser = undefined })
     shared.storeBrowser = context
