@@ -182,7 +182,7 @@ export async function addProductsToCart(products: CartProduct[]): Promise<CartRe
       console.log(`\nResumen: ${result.success.length} exitosos, ${result.failed.length} fallidos`)
       return result
     })
-  } catch {
-    throw describeConnectionError()
+  } catch (error) {
+    throw describeConnectionError(error)
   }
 }

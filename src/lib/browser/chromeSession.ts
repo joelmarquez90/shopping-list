@@ -1,35 +1,67 @@
 import { chromium, type BrowserContext, type Page } from 'playwright'
-import { mkdir, lstat, chmod } from 'node:fs/promises'
+import childProcess, { type ChildProcess } from 'node:child_process'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { isProductUrl, isStoreUrl, type Store } from '../storeUrls'
+import { ApiError } from '../server/automationPolicy'
 
-const USER_DATA_DIR = path.join(process.cwd(), '.masonline-session')
-const shared = globalThis as typeof globalThis & { storeBrowser?: BrowserContext }
+const USER_DATA_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), '.masonline-session')
+const CHROME_PATH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+const CLOSE_LOGIN_MESSAGE = 'Terminá de iniciar sesión y salí del Chrome de las tiendas con ⌘Q. Después volvé a intentar.'
+const shared = globalThis as typeof globalThis & { storeBrowser?: BrowserContext; storeLogin?: ChildProcess }
 
 export function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-/** Playwright's private pipe replaces the unauthenticated localhost CDP port. */
+async function prepareProfile(): Promise<void> {
+  await fs.mkdir(/* turbopackIgnore: true */ USER_DATA_DIR, { recursive: true, mode: 0o700 })
+  // This is local runtime state, never an asset to inspect or bundle at build time.
+  if (!(await fs.lstat(/* turbopackIgnore: true */ USER_DATA_DIR)).isDirectory()) throw new Error('Perfil de navegador inválido.')
+  await fs.chmod(/* turbopackIgnore: true */ USER_DATA_DIR, 0o700)
+}
+
+/** Human sign-in uses ordinary Chrome, without any debugging or automation flags. */
 export async function openBrowserAt(url: string): Promise<void> {
   if (!isStoreUrl(url, 'masonline') && !isStoreUrl(url, 'meli')) throw new Error('Tienda no permitida.')
+  if (shared.storeBrowser) await shared.storeBrowser.close()
+  await prepareProfile()
+  const loginArgs = [
+    `--user-data-dir=${USER_DATA_DIR}`, '--no-first-run', '--no-default-browser-check', '--disable-background-mode', url,
+  ]
+  const login = childProcess.spawn(/* turbopackIgnore: true */ CHROME_PATH, /* turbopackIgnore: true */ loginArgs, { stdio: 'ignore', detached: true })
+  // Repeated clicks forward a new tab to the existing process; keep tracking its owner.
+  shared.storeLogin ??= login
+  const clear = () => { if (shared.storeLogin === login) shared.storeLogin = undefined }
+  login.once('exit', clear)
+  login.once('error', clear)
+  await new Promise<void>((resolve, reject) => {
+    login.once('spawn', resolve)
+    login.once('error', () => reject(new ApiError(503, 'No se pudo abrir Google Chrome. Comprobá que esté instalado.')))
+  })
+  login.unref()
+}
+
+/** Reopen the signed-in profile only after the human has closed the login browser. */
+export async function connectToChrome(): Promise<{ context: BrowserContext }> {
+  if (shared.storeLogin) throw new ApiError(409, CLOSE_LOGIN_MESSAGE)
   if (!shared.storeBrowser) {
-    await mkdir(USER_DATA_DIR, { recursive: true, mode: 0o700 })
-    if (!(await lstat(USER_DATA_DIR)).isDirectory()) throw new Error('Perfil de navegador inválido.')
-    await chmod(USER_DATA_DIR, 0o700)
-    const context = await chromium.launchPersistentContext(USER_DATA_DIR, {
-      channel: 'chrome', headless: false, acceptDownloads: false,
-      serviceWorkers: 'block', timeout: 30000,
-    })
+    await prepareProfile()
+    let context: BrowserContext
+    try {
+      context = await chromium.launchPersistentContext(USER_DATA_DIR, {
+        channel: 'chrome', headless: false, acceptDownloads: false,
+        serviceWorkers: 'block', timeout: 30000,
+        // Use Chrome's real keychain so cookies from the human sign-in stay readable.
+        ignoreDefaultArgs: ['--use-mock-keychain', '--password-store=basic'],
+      })
+    } catch {
+      // Also covers a login Chrome left open across a server restart.
+      throw new ApiError(409, 'No se pudo abrir el perfil de las tiendas. Salí de ese Chrome con ⌘Q y volvé a intentar; si sigue fallando, comprobá que Google Chrome esté instalado.')
+    }
     context.on('close', () => { if (shared.storeBrowser === context) shared.storeBrowser = undefined })
     shared.storeBrowser = context
   }
-  const page = await shared.storeBrowser.newPage()
-  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
-}
-
-export async function connectToChrome(): Promise<{ context: BrowserContext }> {
-  if (!shared.storeBrowser) throw new Error('Usá el botón «Sesión» para abrir el navegador local.')
   return { context: shared.storeBrowser }
 }
 
@@ -60,6 +92,7 @@ export async function gotoProduct(page: Page, url: string, store: Store): Promis
   if (!isProductUrl(page.url(), store)) throw new Error('El producto redirigió a una página no permitida.')
 }
 
-export function describeConnectionError(): Error {
+export function describeConnectionError(error?: unknown): Error {
+  if (error instanceof ApiError) return error
   return new Error('No se pudo completar la operación. Revisá la sesión del navegador e intentá de nuevo.')
 }

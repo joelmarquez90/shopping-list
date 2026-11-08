@@ -151,7 +151,7 @@ export async function searchCandidates(products: MeliSearchProduct[]): Promise<M
       console.log(`Busqueda terminada: ${items.filter(i => i.candidates.length > 0).length}/${items.length} con resultados`)
       return items
     })
-  } catch {
-    throw describeConnectionError()
+  } catch (error) {
+    throw describeConnectionError(error)
   }
 }

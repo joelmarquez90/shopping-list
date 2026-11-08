@@ -24,6 +24,7 @@ interface Result {
 
 export function MasonlineButton({ products, onMarkComprado }: MasonlineButtonProps) {
   const [loginLoading, setLoginLoading] = useState(false)
+  const [loginOpened, setLoginOpened] = useState(false)
   const [cartStatus, setCartStatus] = useState<CartStatus>('idle')
   const [result, setResult] = useState<Result | null>(null)
 
@@ -33,10 +34,14 @@ export function MasonlineButton({ products, onMarkComprado }: MasonlineButtonPro
 
   const handleLogin = async () => {
     setLoginLoading(true)
+    setLoginOpened(false)
+    setCartStatus('idle')
+    setResult(null)
     try {
       const response = await automationFetch('/api/masonline/login')
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'No se pudo abrir la sesión.')
+      setLoginOpened(true)
     } catch (error) {
       setCartStatus('error')
       setResult({ success: [], failed: [{ id: '', name: 'Sesión', error: error instanceof Error ? error.message : 'Error de red' }] })
@@ -49,6 +54,7 @@ export function MasonlineButton({ products, onMarkComprado }: MasonlineButtonPro
     if (eligible.length === 0) return
 
     setCartStatus('loading')
+    setLoginOpened(false)
     setResult(null)
 
     try {
@@ -109,12 +115,12 @@ export function MasonlineButton({ products, onMarkComprado }: MasonlineButtonPro
               ? 'border-card-border bg-card-bg text-muted/50 cursor-not-allowed'
               : 'border-card-border bg-card-bg hover:bg-orange-900/30 hover:border-orange-700/50 text-muted hover:text-orange-400'
           }`}
-          title="Abrir MasonLine para iniciar sesion"
+          title="Abrir Chrome para iniciar sesión en las tiendas"
         >
           {loginLoading && (
             <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin mr-2 align-middle" />
           )}
-          Sesion
+          Sesión
         </button>
 
         <button
@@ -141,6 +147,12 @@ export function MasonlineButton({ products, onMarkComprado }: MasonlineButtonPro
           {cartButtonText()}
         </button>
       </div>
+
+      {loginOpened && (
+        <p role="status" className="text-xs text-muted mt-1">
+          Iniciá sesión en el Chrome que se abrió. Cuando termines, salí de ese Chrome con ⌘Q y volvé a «Comprar» o «Mercado Libre».
+        </p>
+      )}
 
       {result && result.failed.length > 0 && cartStatus !== 'loading' && (
         <div className="text-xs text-red-400 mt-1">

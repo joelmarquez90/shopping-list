@@ -221,7 +221,7 @@ export async function addSelectionsToCart(selections: MeliSelection[]): Promise<
       console.log(`\nResumen Mercado Libre: ${result.success.length} exitosos, ${result.failed.length} fallidos`)
       return result
     })
-  } catch {
-    throw describeConnectionError()
+  } catch (error) {
+    throw describeConnectionError(error)
   }
 }

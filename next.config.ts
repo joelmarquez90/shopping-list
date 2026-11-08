@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  outputFileTracingExcludes: {
+    '*': ['./.masonline-session/**', './serviceAccountKey.json'],
+  },
   async headers() {
     return [{
       source: '/:path*',
